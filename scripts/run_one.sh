@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build the benchmark image and run exactly one container: --cpus=2, ORT default
-# intra-op threads and spinning, appending one row to results/phase1.csv.
+# intra-op threads and spinning, appending one row to results/scratch/run_one.csv.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -25,4 +25,4 @@ docker run --rm \
     --intra-threads 0 \
     --spin default \
     --label docker-cpus2-default \
-    --out results/phase1.csv
+    --out results/scratch/run_one.csv

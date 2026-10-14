@@ -247,7 +247,7 @@ runs (`matrices/mac-pilot.json`: 50 iterations per run, 4 runs per cell, scratch
 Every default-thread run was throttled in 100% of its CFS periods (e.g. 554/554);
 matched runs were throttled in 22–76% of periods.
 
-With Rosetta on (`results/phase1.csv`, `--cpus=2`, 300 iterations), the same
+With Rosetta on (`results/mac-rosetta-on/phase1.csv`, `--cpus=2`, 300 iterations), the same
 comparison was 1113 vs 339 ms (3.3x). Spinning off brought the 8-thread case to
 372 ms there, but its latencies split into two clusters (p50 between 323 and 376
 ms across runs; p99 390–395 vs 344–350 ms matched). Rosetta's slow kernels hid

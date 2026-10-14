@@ -38,7 +38,7 @@ sanity check on fixed random inputs):
 On the host:
 
 ```bash
-.venv/bin/python bench/run.py --label host --out results/phase1.csv
+.venv/bin/python bench/run.py --label host --out results/scratch/one.csv
 ```
 
 In Docker (builds the image, runs one container with `--cpus=2` and ORT's default
