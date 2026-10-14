@@ -1,0 +1,64 @@
+{
+  "recorded_utc": "2026-10-14T09:56:25+00:00",
+  "stage": "pilot",
+  "ec2": null,
+  "macos_host": {
+    "hw_model": "MacBookPro17,1",
+    "cpu_brand": "Apple M1",
+    "performance_cores": "4",
+    "efficiency_cores": "4",
+    "memory_bytes": "8589934592",
+    "macos_version": "26.5.1",
+    "power_source": "AC Power",
+    "low_power_mode": "0"
+  },
+  "os": {
+    "pretty_name": "macOS-26.5.1-arm64-arm-64bit",
+    "kernel": "25.5.0",
+    "kernel_build": "Darwin Kernel Version 25.5.0: Mon Apr 27 20:38:00 PDT 2026; root:xnu-12377.121.6~2/RELEASE_ARM64_T8103",
+    "machine": "arm64"
+  },
+  "cpu": {
+    "cpuinfo": null,
+    "lscpu": null,
+    "os_cpu_count": 8,
+    "smt_active": null,
+    "cpufreq": null
+  },
+  "memory_total": null,
+  "transparent_hugepage": null,
+  "cgroup_version": null,
+  "docker": {
+    "ServerVersion": "29.6.1",
+    "OperatingSystem": "Docker Desktop",
+    "KernelVersion": "6.12.76-linuxkit",
+    "Architecture": "aarch64",
+    "NCPU": 8,
+    "MemTotal": 4108632064,
+    "CgroupVersion": "2",
+    "CgroupDriver": "cgroupfs",
+    "Driver": "overlayfs"
+  },
+  "image": {
+    "image": "onnx-docker-bench:latest",
+    "image_id": "sha256:3a98720238affd48334fb516ff22dc94ef61cc7b0c46fff357a0ee99b1bef6a9",
+    "content_sha256": "d7cca13c502717a97865641ae473d85c29ebf9703a4a19676f0225fe870b987e",
+    "ort_version": "1.31.0",
+    "numpy_version": "2.4.6",
+    "python_version": "3.12.15",
+    "machine": "aarch64"
+  },
+  "git": {
+    "commit": "49a07e8e5d20f88ea34ad2f8c544319c4ef4975e",
+    "dirty": false
+  },
+  "models_sha256": {
+    "resnet50.int8.onnx": "b68d60126df7fe30ea75762e72eb54e81c3731d65920318cce0c6d84db68b74c",
+    "resnet50.onnx": "e05907d9fd93b2076d894ea9971455a7f1aa5486bb4caa29cb76f8f40dca818f"
+  },
+  "loadavg": "3.05 3.28 3.45",
+  "errors": [
+    "lscpu -J: [Errno 2] No such file or directory: 'lscpu'",
+    "stat -fc %T /sys/fs/cgroup: exit 1: stat: %T: stat: No such file or directory\nstat: /sys/fs/cgroup: stat: No such file or directory"
+  ]
+}
