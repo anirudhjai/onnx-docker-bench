@@ -11,6 +11,7 @@ import csv
 import gc
 import os
 import platform
+import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,6 +25,8 @@ OPT_LEVELS = {
     "extended": ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED,
     "all": ort.GraphOptimizationLevel.ORT_ENABLE_ALL,
 }
+# Value for the session.intra_op.allow_spinning config entry; None = leave ORT's default.
+SPIN = {"default": None, "on": "1", "off": "0"}
 INPUT_SEED = 0
 
 FIELDS = [
@@ -40,7 +43,8 @@ FIELDS = [
     "cgroup_cpus",
     "in_container",
     "intra_threads",
-    "inter_threads",
+    "spin",
+    "process_threads",
     "opt_level",
     "batch",
     "height",
@@ -76,6 +80,19 @@ def read_cgroup_cpu_max() -> str | None:
     return None
 
 
+def count_process_threads() -> int | str:
+    """Number of OS threads in this process (all of them, not only ORT's pool)."""
+    if os.path.isdir("/proc/self/task"):
+        return len(os.listdir("/proc/self/task"))
+    if platform.system() == "Darwin":
+        # `ps -M` prints a header line followed by one line per thread.
+        out = subprocess.run(
+            ["ps", "-M", "-p", str(os.getpid())], capture_output=True, text=True, check=True
+        ).stdout
+        return len(out.strip().splitlines()) - 1
+    return "n/a"
+
+
 def in_container() -> bool:
     if Path("/.dockerenv").exists() or Path("/run/.containerenv").exists():
         return True
@@ -106,11 +123,10 @@ def main() -> None:
     parser.add_argument("--model", type=Path, default=Path("models/resnet50.onnx"))
     parser.add_argument("--intra-threads", type=int, default=0, help="intra-op threads (0 = ORT default)")
     parser.add_argument(
-        "--inter-threads",
-        type=int,
-        default=0,
-        help="inter-op threads (0 = ORT default); only used by ORT's parallel execution mode, "
-        "which this script leaves at the default (sequential)",
+        "--spin",
+        choices=SPIN,
+        default="default",
+        help="session.intra_op.allow_spinning: on=1, off=0, default=leave unset",
     )
     parser.add_argument("--opt-level", choices=OPT_LEVELS, default="all")
     parser.add_argument("--height", type=int, default=224)
@@ -121,14 +137,16 @@ def main() -> None:
     parser.add_argument("--label", default="")
     parser.add_argument("--out", type=Path, default=Path("results/results.csv"))
     args = parser.parse_args()
-    if args.iters < 1 or args.warmup < 0 or args.intra_threads < 0 or args.inter_threads < 0:
-        parser.error("--iters must be >= 1; --warmup and thread counts must be >= 0")
+    if args.iters < 1 or args.warmup < 0 or args.intra_threads < 0:
+        parser.error("--iters must be >= 1; --warmup and --intra-threads must be >= 0")
 
     # Untimed setup: session creation, input generation, warmup.
+    # Execution mode stays at ORT's default (sequential), so there is no inter-op pool.
     opts = ort.SessionOptions()
     opts.intra_op_num_threads = args.intra_threads
-    opts.inter_op_num_threads = args.inter_threads
     opts.graph_optimization_level = OPT_LEVELS[args.opt_level]
+    if SPIN[args.spin] is not None:
+        opts.add_session_config_entry("session.intra_op.allow_spinning", SPIN[args.spin])
     sess = ort.InferenceSession(str(args.model), opts, providers=["CPUExecutionProvider"])
     # Some wheels (e.g. macOS) also ship CoreML; make sure nothing but the CPU EP runs.
     if sess.get_providers() != ["CPUExecutionProvider"]:
@@ -140,6 +158,7 @@ def main() -> None:
 
     for _ in range(args.warmup):
         sess.run(None, feed)
+    process_threads = count_process_threads()
 
     timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     times = [0.0] * args.iters
@@ -187,7 +206,8 @@ def main() -> None:
         "cgroup_cpus": cgroup_cpus,
         "in_container": in_container(),
         "intra_threads": args.intra_threads,
-        "inter_threads": args.inter_threads,
+        "spin": args.spin,
+        "process_threads": process_threads,
         "opt_level": args.opt_level,
         "batch": args.batch,
         "height": args.height,
@@ -200,9 +220,10 @@ def main() -> None:
 
     print(
         f"[{args.label or '-'}] {args.model}  batch={args.batch} {args.height}x{args.width}  "
-        f"intra={args.intra_threads} inter={args.inter_threads} opt={args.opt_level}  "
+        f"intra={args.intra_threads} spin={args.spin} opt={args.opt_level}  "
         f"warmup={args.warmup} iters={args.iters}"
     )
+    print(f"  process threads after warmup: {process_threads}")
     print(
         f"  latency ms: p50 {p50:.3f}  p95 {p95:.3f}  p99 {p99:.3f}  "
         f"mean {stats['mean_ms']:.3f}  std {stats['std_ms']:.3f}  "
