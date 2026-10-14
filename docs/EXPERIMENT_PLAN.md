@@ -161,7 +161,10 @@ parallel. EBS (30 GB gp3) and data transfer are cents. Even if the assumptions a
 
 Run each stage on both machines, and review before starting the next. The
 runner skips runs already in the output CSV, so a stage can be interrupted and
-resumed, and stages share one results file.
+resumed, and stages share one results file. On the cloud VMs the stages are
+started with `cloud/run_stage.sh pilot|224|448` (see `cloud/README.md` for the full
+provision → sync → setup → stages → fetch → teardown runbook); the commands below
+are what it runs on each VM.
 
 ```bash
 python3 scripts/run_matrix.py matrices/phase2-pilot.json --build                     # stage 0: pilot, ~1 h
