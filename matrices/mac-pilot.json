@@ -1,0 +1,19 @@
+{
+  "name": "mac-pilot",
+  "description": "Runner validation on the Mac (scratch only): 4 cells x 2 repeats x 50 iterations.",
+  "image": "onnx-docker-bench:latest",
+  "out": "results/scratch/mac-pilot/pilot.csv",
+  "seed": 20261014,
+  "repeats": 2,
+  "warmup": 10,
+  "iters": 50,
+  "run_overhead_s": 5,
+  "models": {"fp32": "models/resnet50.onnx"},
+  "factors": {
+    "model": ["fp32"],
+    "input": [224],
+    "cpus": [1, 2],
+    "intra": [0, "matched"],
+    "spin": ["default"]
+  }
+}

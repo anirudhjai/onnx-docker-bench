@@ -1,0 +1,19 @@
+{
+  "name": "phase2-pilot",
+  "description": "Stage 0: one short run of every cell, to measure latencies (iteration caps, ETAs) and sanity-check the setup. Keeps the cpus=1/matched/spin=off cell that the main matrix drops, to confirm spin has no effect at intra=1.",
+  "image": "onnx-docker-bench:latest",
+  "out": "results/phase2/{arch}/pilot.csv",
+  "seed": 20261015,
+  "repeats": 1,
+  "warmup": 20,
+  "iters": 100,
+  "run_overhead_s": 15,
+  "models": {"fp32": "models/resnet50.onnx", "int8": "models/resnet50.int8.onnx"},
+  "factors": {
+    "model": ["fp32", "int8"],
+    "input": [224, 448],
+    "cpus": [1, 2, 4],
+    "intra": [0, "matched"],
+    "spin": ["default", "off"]
+  }
+}
