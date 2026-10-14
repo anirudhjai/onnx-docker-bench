@@ -1,0 +1,5 @@
+timestamp_utc,label,model,system,machine,python_version,ort_version,os_cpu_count,affinity_cpus,cgroup_cpu_max,cgroup_cpus,in_container,intra_threads,spin,process_threads,opt_level,batch,height,width,warmup,iters,p50_ms,p95_ms,p99_ms,mean_ms,std_ms,min_ms,max_ms,throughput_ips_p50
+2026-10-14T08:16:59+00:00,host,models/resnet50.onnx,Darwin,arm64,3.12.0,1.31.0,8,n/a,n/a,n/a,False,0,default,6,all,1,224,224,20,300,32.2785,34.4257,36.5645,32.5805,1.1608,31.6074,43.8497,30.9804
+2026-10-14T08:17:37+00:00,docker-cpus2-default,models/resnet50.onnx,Linux,aarch64,3.12.15,1.31.0,8,8,200000 100000,2.00,True,0,default,16,all,1,224,224,20,300,1113.2537,1287.3991,1421.7414,1128.3140,119.0557,718.7620,1881.8783,0.8983
+2026-10-14T08:23:34+00:00,docker-cpus2-intra2,models/resnet50.onnx,Linux,aarch64,3.12.15,1.31.0,8,8,200000 100000,2.00,True,2,default,10,all,1,224,224,20,300,339.1010,341.5686,344.0037,339.3395,1.2139,337.2505,346.2816,2.9490
+2026-10-14T08:25:40+00:00,docker-cpus2-default-nospin,models/resnet50.onnx,Linux,aarch64,3.12.15,1.31.0,8,8,200000 100000,2.00,True,0,off,16,all,1,224,224,20,300,372.1085,388.8557,394.2026,351.7273,32.7771,303.1711,412.3903,2.6874
