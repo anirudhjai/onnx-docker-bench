@@ -46,7 +46,9 @@ Both append one row to the CSV. See `python bench/run.py --help` for all options
 warmup/iterations). ORT runs in its default sequential execution mode.
 
 `results/` holds real experiment output and is tracked; put smoke tests and
-throwaway runs in `results/scratch/` (gitignored).
+throwaway runs in `results/scratch/` (gitignored). Each row has a `run_id`; with
+`--save-raw`, per-iteration latencies go to `raw/<run_id>.csv` next to the `--out`
+file (so `results/raw/` for official runs, `results/scratch/raw/` for scratch).
 
 ## Results
 

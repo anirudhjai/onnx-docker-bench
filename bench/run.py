@@ -11,6 +11,7 @@ import csv
 import gc
 import os
 import platform
+import secrets
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -38,6 +39,7 @@ SPIN = {"default": None, "on": "1", "off": "0"}
 INPUT_SEED = 0
 
 FIELDS = [
+    "run_id",
     "timestamp_utc",
     "label",
     "model",
@@ -113,6 +115,14 @@ def in_container() -> bool:
     return any(m in text for m in ("docker", "containerd", "kubepods", "libpod"))
 
 
+def write_raw(path: Path, ms: np.ndarray) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["iter", "ms"])
+        writer.writerows((i, f"{v:.4f}") for i, v in enumerate(ms))
+
+
 def append_row(path: Path, row: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     is_new = not path.exists() or path.stat().st_size == 0
@@ -146,9 +156,16 @@ def main() -> None:
     parser.add_argument("--iters", type=int, default=300)
     parser.add_argument("--label", default="")
     parser.add_argument("--out", type=Path, default=Path("results/results.csv"))
+    parser.add_argument(
+        "--save-raw",
+        action="store_true",
+        help="also write per-iteration latencies to <dir of --out>/raw/<run_id>.csv",
+    )
     args = parser.parse_args()
     if args.iters < 1 or args.warmup < 0 or args.intra_threads < 0:
         parser.error("--iters must be >= 1; --warmup and --intra-threads must be >= 0")
+
+    run_id = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{secrets.token_hex(3)}"
 
     # Threads that exist before ORT creates its pool (main thread + anything the
     # imports started).
@@ -211,6 +228,7 @@ def main() -> None:
         cgroup_cpus = "max" if quota == "max" else f"{int(quota) / int(period):.2f}"
 
     row = {
+        "run_id": run_id,
         "timestamp_utc": timestamp,
         "label": args.label,
         "model": str(args.model),
@@ -236,10 +254,14 @@ def main() -> None:
         "iters": args.iters,
         **{k: f"{v:.4f}" for k, v in stats.items()},
     }
+    # Raw file first, so a summary row never points at a run_id without its raw data.
+    raw_path = args.out.parent / "raw" / f"{run_id}.csv"
+    if args.save_raw:
+        write_raw(raw_path, ms)
     append_row(args.out, row)
 
     print(
-        f"[{args.label or '-'}] {args.model}  batch={args.batch} {args.height}x{args.width}  "
+        f"[{args.label or '-'}] run {run_id}  {args.model}  batch={args.batch} {args.height}x{args.width}  "
         f"intra={args.intra_threads} spin={args.spin} opt={args.opt_level}  "
         f"warmup={args.warmup} iters={args.iters}"
     )
@@ -258,7 +280,7 @@ def main() -> None:
         f"cpu_count={row['os_cpu_count']}, affinity={row['affinity_cpus']}, "
         f"cgroup cpu.max={row['cgroup_cpu_max']} ({cgroup_cpus} cpus), container={row['in_container']}"
     )
-    print(f"  appended to {args.out}")
+    print(f"  appended to {args.out}" + (f"; raw timings in {raw_path}" if args.save_raw else ""))
 
 
 if __name__ == "__main__":
