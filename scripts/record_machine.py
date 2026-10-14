@@ -118,6 +118,7 @@ def macos_host() -> dict | None:
         "memory_bytes": sysctl("hw.memsize"),
         "macos_version": platform.mac_ver()[0],
         "power_source": power.splitlines()[0].split("'")[1] if power and "'" in power else None,
+        "battery_pct": next((w.rstrip("%;") for w in (power or "").split() if w.endswith("%;")), None),
         "low_power_mode": next((line.split()[-1] for line in (run("pmset", "-g") or "").splitlines()
                                 if "lowpowermode" in line), None),
     }

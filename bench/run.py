@@ -55,6 +55,8 @@ FIELDS = [
     "cgroup_cpus",
     "in_container",
     "loadavg_1m",
+    "power_source",
+    "battery_pct",
     "intra_threads",
     "spin",
     "baseline_threads",
@@ -151,6 +153,19 @@ def count_process_threads() -> int | str:
     return "n/a"
 
 
+def macos_power() -> tuple[str, str]:
+    """("AC" | "battery", battery percent) from `pmset -g batt`; ("n/a", "n/a") elsewhere."""
+    if platform.system() != "Darwin":
+        return "n/a", "n/a"
+    try:
+        out = subprocess.run(["pmset", "-g", "batt"], capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return "n/a", "n/a"
+    source = "AC" if "'AC Power'" in out else "battery" if "'Battery Power'" in out else "n/a"
+    pct = next((w.rstrip("%;") for w in out.split() if w.endswith("%;")), "n/a")
+    return source, pct
+
+
 def in_container() -> bool:
     if Path("/.dockerenv").exists() or Path("/run/.containerenv").exists():
         return True
@@ -207,6 +222,10 @@ def main() -> None:
         action="store_true",
         help="also write per-iteration latencies to <dir of --out>/raw/<run_id>.csv",
     )
+    # A container can't see the host's power state, so the caller (scripts/run_matrix.py)
+    # passes it in; on a macOS host without these flags it is read from pmset.
+    parser.add_argument("--power-source", help="host power source at run start (AC/battery)")
+    parser.add_argument("--battery-pct", help="host battery percent at run start")
     args = parser.parse_args()
     if args.iters < 1 or args.warmup < 0 or args.intra_threads < 0:
         parser.error("--iters must be >= 1; --warmup and --intra-threads must be >= 0")
@@ -214,6 +233,9 @@ def main() -> None:
     run_id = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{secrets.token_hex(3)}"
     # Machine load when the run starts (inside a container: the host/VM's load).
     loadavg_1m = os.getloadavg()[0]
+    detected_source, detected_pct = macos_power()
+    power_source = args.power_source or detected_source
+    battery_pct = args.battery_pct or detected_pct
     model_sha256 = sha256_file(args.model)
 
     # Threads that exist before ORT creates its pool (main thread + anything the
@@ -299,6 +321,8 @@ def main() -> None:
         "cgroup_cpus": cgroup_cpus,
         "in_container": in_container(),
         "loadavg_1m": f"{loadavg_1m:.2f}",
+        "power_source": power_source,
+        "battery_pct": battery_pct,
         "intra_threads": args.intra_threads,
         "spin": args.spin,
         "baseline_threads": baseline_threads,
@@ -345,7 +369,7 @@ def main() -> None:
         f"  env: {row['system']} {row['machine']}, python {row['python_version']}, ort {row['ort_version']}, "
         f"cpu_count={row['os_cpu_count']}, affinity={row['affinity_cpus']}, "
         f"cgroup cpu.max={row['cgroup_cpu_max']} ({cgroup_cpus} cpus), container={row['in_container']}, "
-        f"load1={row['loadavg_1m']}, model sha256={model_sha256[:12]}"
+        f"load1={row['loadavg_1m']}, power={power_source} ({battery_pct}%), model sha256={model_sha256[:12]}"
     )
     print(f"  appended to {args.out}" + (f"; raw timings in {raw_path}" if args.save_raw else ""))
 

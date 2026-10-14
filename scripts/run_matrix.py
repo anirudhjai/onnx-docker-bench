@@ -122,7 +122,18 @@ def fmt_duration(seconds: float) -> str:
     return f"{seconds // 3600}h{seconds % 3600 // 60:02d}m" if seconds >= 3600 else f"{seconds // 60}m{seconds % 60:02d}s"
 
 
-def docker_command(m: dict, cell: dict, repeat: int, iters: int, name: str) -> list[str]:
+def host_power_args() -> list[str]:
+    """On a macOS host, the power state at run start (`pmset -g batt`), passed into the
+    container, which can't see it. Nothing elsewhere (the benchmark records n/a)."""
+    if platform.system() != "Darwin":
+        return []
+    out = subprocess.run(["pmset", "-g", "batt"], capture_output=True, text=True).stdout
+    source = "AC" if "'AC Power'" in out else "battery" if "'Battery Power'" in out else "n/a"
+    pct = next((w.rstrip("%;") for w in out.split() if w.endswith("%;")), "n/a")
+    return ["--power-source", source, "--battery-pct", pct]
+
+
+def docker_command(m: dict, cell: dict, repeat: int, iters: int, name: str, extra: list[str]) -> list[str]:
     intra = cell["cpus"] if cell["intra"] == "matched" else int(cell["intra"])
     return [
         "docker", "run", "--rm", "--name", name, "--label", f"{CONTAINER_LABEL}={m['name']}",
@@ -140,6 +151,7 @@ def docker_command(m: dict, cell: dict, repeat: int, iters: int, name: str) -> l
         "--label", run_label(cell, repeat),
         "--out", m["out"],
         "--save-raw",
+        *extra,
     ]
 
 
@@ -275,11 +287,13 @@ def main() -> None:
         remaining = [plan(r, c)[1] for r, c in todo[i - 1:]]
         unknown = sum(s is None for s in remaining)
         eta = fmt_duration(sum(s for s in remaining if s is not None)) + (f" + {unknown} unestimated" if unknown else "")
+        power = host_power_args()
         log(f"[{i}/{len(todo)}] start {label} iters={iters}{' (capped)' if iters < m['iters'] else ''} "
-            f"est={fmt_duration(secs) if secs else '?'}, remaining ~{eta}")
+            f"est={fmt_duration(secs) if secs else '?'}, remaining ~{eta}"
+            + (f", power {power[1]} {power[3]}%" if power else ""))
         current_container = f"odb-{m['name']}-{cell_id(cell)}-r{repeat}"
         t0 = time.monotonic()
-        proc = subprocess.run(docker_command(m, cell, repeat, iters, current_container),
+        proc = subprocess.run(docker_command(m, cell, repeat, iters, current_container, power),
                               cwd=ROOT, capture_output=True, text=True)
         current_container = None
         if proc.returncode != 0:
