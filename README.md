@@ -26,6 +26,13 @@ Writes `models/resnet50.onnx` (opset 17, dynamic batch/height/width, random weig
 latency doesn't depend on weight values), validates it with `onnx.checker`, and runs
 test inferences through onnxruntime. `models/` is gitignored.
 
+For the int8 variant (ORT dynamic quantization, plus an fp32-vs-int8 argmax
+sanity check on fixed random inputs):
+
+```bash
+.venv/bin/python scripts/quantize_model.py   # writes models/resnet50.int8.onnx
+```
+
 ## Run one benchmark
 
 On the host:
