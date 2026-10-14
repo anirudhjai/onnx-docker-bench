@@ -93,10 +93,12 @@ import sys
 p_arm, p_x86, gp3, vol, h1, h2, deadline = map(float, sys.argv[1:8])
 arm, x86 = sys.argv[8:10]
 ebs_per_h = 2 * vol * gp3 / 730  # two root volumes, gp3 billed per GB-month
-print(f"    {arm}: ${p_arm:.4f}/h   {x86}: ${p_x86:.4f}/h   gp3: ${gp3:.3f}/GB-month ({2 * vol:.0f} GB total)")
+ipv4_per_h = 2 * 0.005           # public IPv4 addresses, $0.005/h each (AWS list price)
+print(f"    {arm}: ${p_arm:.4f}/h   {x86}: ${p_x86:.4f}/h   gp3: ${gp3:.3f}/GB-month ({2 * vol:.0f} GB total)"
+      f"   public IPv4: 2 x $0.005/h")
 for name, h in (("pilot + 224 stage", h1), ("full run (pilot + 224 + 448)", h2),
                 (f"worst case: both forgotten until the {deadline:.0f} h auto-shutdown", deadline)):
-    print(f"    {name:55s} ~{h:4.1f} h each -> ${h * (p_arm + p_x86 + ebs_per_h):.2f}")
+    print(f"    {name:55s} ~{h:4.1f} h each -> ${h * (p_arm + p_x86 + ebs_per_h + ipv4_per_h):.2f}")
 EOF
 
 log "dry run of cloud/provision.sh"
