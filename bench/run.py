@@ -9,6 +9,7 @@ Usage:
 import argparse
 import csv
 import gc
+import hashlib
 import os
 import platform
 import secrets
@@ -43,6 +44,7 @@ FIELDS = [
     "timestamp_utc",
     "label",
     "model",
+    "model_sha256",
     "system",
     "machine",
     "python_version",
@@ -52,6 +54,7 @@ FIELDS = [
     "cgroup_cpu_max",
     "cgroup_cpus",
     "in_container",
+    "loadavg_1m",
     "intra_threads",
     "spin",
     "baseline_threads",
@@ -71,7 +74,12 @@ FIELDS = [
     "min_ms",
     "max_ms",
     "throughput_ips_p50",
+    # cgroup CPU throttling counters, as deltas across the timed loop.
+    "cgroup_nr_periods",
+    "cgroup_nr_throttled",
+    "cgroup_throttled_usec",
 ]
+THROTTLE_KEYS = ("nr_periods", "nr_throttled", "throttled_usec")
 
 
 def read_cgroup_cpu_max() -> str | None:
@@ -90,6 +98,40 @@ def read_cgroup_cpu_max() -> str | None:
             q = quota.read_text().strip()
             return f"{'max' if q == '-1' else q} {period.read_text().strip()}"
     return None
+
+
+def read_cgroup_throttling() -> dict[str, int] | None:
+    """Return nr_periods, nr_throttled and throttled_usec from the cgroup's cpu.stat.
+
+    Same cgroup as read_cgroup_cpu_max. cgroup v1 reports throttled_time in ns,
+    converted here to usec. None when there are no throttling stats (no cgroup, or
+    no CPU quota on this cgroup).
+    """
+    for path, time_key, ns_per_unit in (
+        ("/sys/fs/cgroup/cpu.stat", "throttled_usec", 1),
+        ("/sys/fs/cgroup/cpu/cpu.stat", "throttled_time", 1000),
+        ("/sys/fs/cgroup/cpu,cpuacct/cpu.stat", "throttled_time", 1000),
+    ):
+        try:
+            stat = dict(line.split() for line in Path(path).read_text().splitlines() if line.strip())
+        except OSError:
+            continue
+        if "nr_periods" not in stat or time_key not in stat:
+            return None
+        return {
+            "nr_periods": int(stat["nr_periods"]),
+            "nr_throttled": int(stat["nr_throttled"]),
+            "throttled_usec": int(stat[time_key]) // ns_per_unit,
+        }
+    return None
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def count_process_threads() -> int | str:
@@ -166,6 +208,9 @@ def main() -> None:
         parser.error("--iters must be >= 1; --warmup and --intra-threads must be >= 0")
 
     run_id = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{secrets.token_hex(3)}"
+    # Machine load when the run starts (inside a container: the host/VM's load).
+    loadavg_1m = os.getloadavg()[0]
+    model_sha256 = sha256_file(args.model)
 
     # Threads that exist before ORT creates its pool (main thread + anything the
     # imports started).
@@ -198,6 +243,7 @@ def main() -> None:
     timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     times = [0.0] * args.iters
     gc.collect()
+    throttle_before = read_cgroup_throttling()
     gc.disable()  # keep collector pauses out of the timed loop
     try:
         for i in range(args.iters):
@@ -206,6 +252,11 @@ def main() -> None:
             times[i] = time.perf_counter() - t0
     finally:
         gc.enable()
+    throttle_after = read_cgroup_throttling()
+    if throttle_before is None or throttle_after is None:
+        throttle = {k: "n/a" for k in THROTTLE_KEYS}
+    else:
+        throttle = {k: throttle_after[k] - throttle_before[k] for k in THROTTLE_KEYS}
 
     ms = np.asarray(times) * 1e3
     p50, p95, p99 = np.percentile(ms, [50, 95, 99])
@@ -232,6 +283,7 @@ def main() -> None:
         "timestamp_utc": timestamp,
         "label": args.label,
         "model": str(args.model),
+        "model_sha256": model_sha256,
         "system": platform.system(),
         "machine": platform.machine(),
         "python_version": platform.python_version(),
@@ -241,6 +293,7 @@ def main() -> None:
         "cgroup_cpu_max": cpu_max or "n/a",
         "cgroup_cpus": cgroup_cpus,
         "in_container": in_container(),
+        "loadavg_1m": f"{loadavg_1m:.2f}",
         "intra_threads": args.intra_threads,
         "spin": args.spin,
         "baseline_threads": baseline_threads,
@@ -253,6 +306,7 @@ def main() -> None:
         "warmup": args.warmup,
         "iters": args.iters,
         **{k: f"{v:.4f}" for k, v in stats.items()},
+        **{f"cgroup_{k}": v for k, v in throttle.items()},
     }
     # Raw file first, so a summary row never points at a run_id without its raw data.
     raw_path = args.out.parent / "raw" / f"{run_id}.csv"
@@ -276,9 +330,14 @@ def main() -> None:
     )
     print(f"  throughput: {stats['throughput_ips_p50']:.1f} images/s (at p50)")
     print(
+        f"  cgroup during timed loop: {throttle['nr_periods']} periods, {throttle['nr_throttled']} throttled, "
+        f"{throttle['throttled_usec']} us throttled"
+    )
+    print(
         f"  env: {row['system']} {row['machine']}, python {row['python_version']}, ort {row['ort_version']}, "
         f"cpu_count={row['os_cpu_count']}, affinity={row['affinity_cpus']}, "
-        f"cgroup cpu.max={row['cgroup_cpu_max']} ({cgroup_cpus} cpus), container={row['in_container']}"
+        f"cgroup cpu.max={row['cgroup_cpu_max']} ({cgroup_cpus} cpus), container={row['in_container']}, "
+        f"load1={row['loadavg_1m']}, model sha256={model_sha256[:12]}"
     )
     print(f"  appended to {args.out}" + (f"; raw timings in {raw_path}" if args.save_raw else ""))
 
