@@ -37,8 +37,9 @@ Why these:
 - Same size and generation on both arches; compute-optimized, non-burstable
   (no T-family CPU credits). Fallbacks if capacity is short: c7g/c7a (c7a also
   has no SMT; $0.411/h).
-- On-demand rather than spot: a ~14 h run shouldn't be interruptible. Spot would
-  roughly halve an already small bill if the runner is made resumable.
+- On-demand rather than spot. The runner is resumable, but a spot interruption
+  also takes the instance, and with it any results not yet copied off. Spot
+  would save only ~$6 in total.
 
 Same OS image on both (Ubuntu 24.04 LTS), Docker Engine (not Desktop),
 cgroup v2. The Dockerfile pins `python:3.12-slim` by its multi-arch index digest,
