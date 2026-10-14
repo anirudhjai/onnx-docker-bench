@@ -1,9 +1,10 @@
-# python:3.12-slim pinned to its linux/arm64/v8 manifest (resolved 2026-10-14 with
-# `docker buildx imagetools inspect python:3.12-slim`):
+# python:3.12-slim pinned by its multi-arch index digest, so the same Dockerfile
+# builds natively on arm64 and x86_64. Resolved 2026-10-14 with
+# `docker buildx imagetools inspect python:3.12-slim`:
 #   version: 3.12.15-slim-trixie, created 2026-10-06
-#   multi-arch index digest: sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
-# This is the arm64 image specifically; other platforms would need their own digest.
-FROM python:3.12-slim@sha256:16bf2b5c59a08523519d3c8589deca849285dee1d62a3653e124c3dba340f15e
+#   linux/arm64/v8 manifest: sha256:16bf2b5c59a08523519d3c8589deca849285dee1d62a3653e124c3dba340f15e
+#   linux/amd64 manifest:    sha256:2b4f19dae3a777dfc3b76730bda1e82e1f66ab2a2686fa93ca78edbfb4f04ffe
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 
 # Keep these in sync with requirements.txt.
 ARG ORT_VERSION=1.31.0
