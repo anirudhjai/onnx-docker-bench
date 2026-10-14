@@ -74,12 +74,14 @@ FIELDS = [
     "min_ms",
     "max_ms",
     "throughput_ips_p50",
-    # cgroup CPU throttling counters, as deltas across the timed loop.
+    # cgroup cpu.stat counters, as deltas across the timed loop. usage_usec is the
+    # container's total CPU time (all threads), so usage_usec / iters = CPU per inference.
     "cgroup_nr_periods",
     "cgroup_nr_throttled",
     "cgroup_throttled_usec",
+    "cgroup_usage_usec",
 ]
-THROTTLE_KEYS = ("nr_periods", "nr_throttled", "throttled_usec")
+CPU_STAT_KEYS = ("nr_periods", "nr_throttled", "throttled_usec", "usage_usec")
 
 
 def read_cgroup_cpu_max() -> str | None:
@@ -100,12 +102,13 @@ def read_cgroup_cpu_max() -> str | None:
     return None
 
 
-def read_cgroup_throttling() -> dict[str, int] | None:
-    """Return nr_periods, nr_throttled and throttled_usec from the cgroup's cpu.stat.
+def read_cgroup_cpu_stat() -> dict[str, int | None] | None:
+    """Return nr_periods, nr_throttled, throttled_usec and usage_usec from the cgroup's cpu.stat.
 
     Same cgroup as read_cgroup_cpu_max. cgroup v1 reports throttled_time in ns,
-    converted here to usec. None when there are no throttling stats (no cgroup, or
-    no CPU quota on this cgroup).
+    converted here to usec, and keeps CPU usage elsewhere (cpuacct), so usage_usec
+    is None there. None when there are no throttling stats (no cgroup, or no CPU
+    quota on this cgroup).
     """
     for path, time_key, ns_per_unit in (
         ("/sys/fs/cgroup/cpu.stat", "throttled_usec", 1),
@@ -122,6 +125,7 @@ def read_cgroup_throttling() -> dict[str, int] | None:
             "nr_periods": int(stat["nr_periods"]),
             "nr_throttled": int(stat["nr_throttled"]),
             "throttled_usec": int(stat[time_key]) // ns_per_unit,
+            "usage_usec": int(stat["usage_usec"]) if "usage_usec" in stat else None,
         }
     return None
 
@@ -243,7 +247,7 @@ def main() -> None:
     timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     times = [0.0] * args.iters
     gc.collect()
-    throttle_before = read_cgroup_throttling()
+    stat_before = read_cgroup_cpu_stat()
     gc.disable()  # keep collector pauses out of the timed loop
     try:
         for i in range(args.iters):
@@ -252,11 +256,12 @@ def main() -> None:
             times[i] = time.perf_counter() - t0
     finally:
         gc.enable()
-    throttle_after = read_cgroup_throttling()
-    if throttle_before is None or throttle_after is None:
-        throttle = {k: "n/a" for k in THROTTLE_KEYS}
-    else:
-        throttle = {k: throttle_after[k] - throttle_before[k] for k in THROTTLE_KEYS}
+    stat_after = read_cgroup_cpu_stat()
+    cpu_stat = {k: "n/a" for k in CPU_STAT_KEYS}
+    if stat_before is not None and stat_after is not None:
+        for k in CPU_STAT_KEYS:
+            if stat_before[k] is not None and stat_after[k] is not None:
+                cpu_stat[k] = stat_after[k] - stat_before[k]
 
     ms = np.asarray(times) * 1e3
     p50, p95, p99 = np.percentile(ms, [50, 95, 99])
@@ -306,7 +311,7 @@ def main() -> None:
         "warmup": args.warmup,
         "iters": args.iters,
         **{k: f"{v:.4f}" for k, v in stats.items()},
-        **{f"cgroup_{k}": v for k, v in throttle.items()},
+        **{f"cgroup_{k}": v for k, v in cpu_stat.items()},
     }
     # Raw file first, so a summary row never points at a run_id without its raw data.
     raw_path = args.out.parent / "raw" / f"{run_id}.csv"
@@ -329,9 +334,12 @@ def main() -> None:
         f"min {stats['min_ms']:.3f}  max {stats['max_ms']:.3f}"
     )
     print(f"  throughput: {stats['throughput_ips_p50']:.1f} images/s (at p50)")
+    cpu_per_iter = (
+        f"{cpu_stat['usage_usec'] / 1e3 / args.iters:.1f} ms" if isinstance(cpu_stat["usage_usec"], int) else "n/a"
+    )
     print(
-        f"  cgroup during timed loop: {throttle['nr_periods']} periods, {throttle['nr_throttled']} throttled, "
-        f"{throttle['throttled_usec']} us throttled"
+        f"  cgroup during timed loop: {cpu_stat['nr_periods']} periods, {cpu_stat['nr_throttled']} throttled, "
+        f"{cpu_stat['throttled_usec']} us throttled; CPU time per inference {cpu_per_iter}"
     )
     print(
         f"  env: {row['system']} {row['machine']}, python {row['python_version']}, ort {row['ort_version']}, "
