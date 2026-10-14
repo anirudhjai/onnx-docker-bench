@@ -1,20 +1,29 @@
-# Export-only dependencies (scripts/export_model.py). Not needed to run the benchmark.
+# Dev dependencies: model export (scripts/export_model.py, quantize_model.py) and
+# analysis (scripts/analyze.py). Not needed to run the benchmark.
 -r requirements.txt
 torch==2.14.1
 torchvision==0.29.1
 onnx==1.23.2
 onnxscript==0.7.2  # required by torch.onnx.export(dynamo=True)
+matplotlib==3.11.2  # scripts/analyze.py
 
 # transitive (pip freeze, macOS arm64, Python 3.12)
+contourpy==1.4.0
+cycler==0.12.1
 filelock==4.1.1
+fonttools==4.67.0
 fsspec==2026.9.0
 Jinja2==3.1.6
+kiwisolver==1.5.1
 MarkupSafe==3.0.4
 ml_dtypes==0.6.0
 mpmath==1.3.0
 networkx==3.7
 onnx-ir==1.0.0
 pillow==12.3.0
+pyparsing==3.3.3
+python-dateutil==2.9.0.post0
 setuptools==84.0.0
+six==1.17.0
 sympy==1.14.0
 typing_extensions==4.16.0

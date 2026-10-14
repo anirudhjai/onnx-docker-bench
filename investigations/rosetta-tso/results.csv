@@ -1,0 +1,9 @@
+metric,unit,rosetta_on,rosetta_off,host,source
+ort_resnet50_1thread_p50,ms,655.0,99.8,100.0,"on: container --intra-threads 1, 30 iters (terminal output, not saved); off+host: logs/after_ort.csv"
+ort_resnet50_cpus2_intra2_p50,ms,339.1,53.5,55.9,"on: results/mac-rosetta-on/phase1.csv; off+host: logs/after_ort.csv (host row: --intra-threads 2, no limit)"
+l1_neon_load_bandwidth,GB/s,7.2,131.6,130.1,"microbench.c load_l1; on: terminal output, not saved; off: logs/after_container.txt; host: logs/after_host.txt"
+l1_scalar_load_bandwidth,GB/s,4.8,66.3,66.5,"litmus.c scalar_load_l1, median of runs; on: terminal output (4.8, 6.1, 4.8); off: logs/after_container.txt; host: logs/after_host.txt"
+l1_copy_bandwidth,GB/s,5.1,77.4,89.0,"microbench.c copy_l1 (noisy: host was 55.2 in an earlier run); on: terminal output; off/host: logs/"
+neon_fma_registers,GFLOP/s,100.1,100.3,88.2,"microbench.c fma_reg (container and host use different compilers)"
+openblas_sgemm_1024_1thread,GFLOP/s,13.5,96.3,94.2,"matmul.py; on: terminal output; off: logs/after_container.txt; host: logs/after_host.txt"
+mp_litmus_reordered_fraction,fraction,0.0,0.498,0.331,"litmus.c; on: 0 of ~860M samples over 5 runs (terminal output); off: 5 runs in logs/after_container.txt; host: logs/after_host.txt"
