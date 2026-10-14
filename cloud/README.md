@@ -1,5 +1,12 @@
 # Cloud runbook (Phase 2)
 
+> **Status: prepared, not yet run on real AWS.** These scripts are planned for
+> v2. They pass `bash -n` and shellcheck, and were exercised locally against a
+> stubbed AWS CLI, in Ubuntu 24.04 containers (`setup.sh` install steps,
+> cloud-init schema, auto-shutdown deadline logic) and with synthetic results. They
+> have not launched an instance, and real AWS dry runs (`cloud/preflight.sh`)
+> have not been run. v1 results come from the Mac (`results/mac-v1/`).
+
 Runs the matrix from `docs/EXPERIMENT_PLAN.md` on one **c8g.2xlarge** (arm64,
 Graviton4) and one **c8a.2xlarge** (x86_64, AMD EPYC Turin), Ubuntu 24.04 LTS, in
 your default AWS region. All scripts run from the repo root on your machine,

@@ -1,9 +1,10 @@
 # Phase 2 experiment plan
 
-Status: ready for review; the tooling (runner, int8 model, per-run metrics) is
-built and was validated on the Mac, but nothing here has run in the cloud. Prices
-were checked on 2026-10-14 (instances.vantage.sh, us-east-1 on-demand Linux) and
-should be re-checked before launching.
+Status: **deferred to v2.** v1 ships with the Mac matrix (`matrices/mac-v1.json`,
+`results/mac-v1/`), which uses this plan's statistics on the 224 cells. The cloud
+tooling in `cloud/` is **prepared, not yet run on real AWS** (see
+`cloud/README.md`). Prices were checked on 2026-10-14 (instances.vantage.sh,
+us-east-1 on-demand Linux) and should be re-checked before launching.
 
 ## Questions
 
