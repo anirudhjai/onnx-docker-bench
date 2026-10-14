@@ -16,8 +16,16 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import numpy as np
-import onnxruntime as ort
+# Must be set before numpy/onnxruntime load. numpy's Linux wheels bundle OpenBLAS,
+# which starts a thread per visible CPU at import; the benchmark never calls BLAS,
+# so those threads only inflate the process thread count and make it incomparable
+# between host and container. OMP_NUM_THREADS does the same for any OpenMP runtime
+# (ORT's CPU EP doesn't use OpenMP). setdefault keeps an explicit override working.
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
+import numpy as np  # noqa: E402
+import onnxruntime as ort  # noqa: E402
 
 OPT_LEVELS = {
     "disable": ort.GraphOptimizationLevel.ORT_DISABLE_ALL,
@@ -44,7 +52,9 @@ FIELDS = [
     "in_container",
     "intra_threads",
     "spin",
+    "baseline_threads",
     "process_threads",
+    "session_threads_added",
     "opt_level",
     "batch",
     "height",
@@ -140,6 +150,10 @@ def main() -> None:
     if args.iters < 1 or args.warmup < 0 or args.intra_threads < 0:
         parser.error("--iters must be >= 1; --warmup and --intra-threads must be >= 0")
 
+    # Threads that exist before ORT creates its pool (main thread + anything the
+    # imports started).
+    baseline_threads = count_process_threads()
+
     # Untimed setup: session creation, input generation, warmup.
     # Execution mode stays at ORT's default (sequential), so there is no inter-op pool.
     opts = ort.SessionOptions()
@@ -159,6 +173,10 @@ def main() -> None:
     for _ in range(args.warmup):
         sess.run(None, feed)
     process_threads = count_process_threads()
+    if isinstance(process_threads, int) and isinstance(baseline_threads, int):
+        session_threads_added = process_threads - baseline_threads
+    else:
+        session_threads_added = "n/a"
 
     timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     times = [0.0] * args.iters
@@ -207,7 +225,9 @@ def main() -> None:
         "in_container": in_container(),
         "intra_threads": args.intra_threads,
         "spin": args.spin,
+        "baseline_threads": baseline_threads,
         "process_threads": process_threads,
+        "session_threads_added": session_threads_added,
         "opt_level": args.opt_level,
         "batch": args.batch,
         "height": args.height,
@@ -223,7 +243,10 @@ def main() -> None:
         f"intra={args.intra_threads} spin={args.spin} opt={args.opt_level}  "
         f"warmup={args.warmup} iters={args.iters}"
     )
-    print(f"  process threads after warmup: {process_threads}")
+    print(
+        f"  threads: baseline {baseline_threads}, after warmup {process_threads} "
+        f"(session added {session_threads_added})"
+    )
     print(
         f"  latency ms: p50 {p50:.3f}  p95 {p95:.3f}  p99 {p99:.3f}  "
         f"mean {stats['mean_ms']:.3f}  std {stats['std_ms']:.3f}  "
