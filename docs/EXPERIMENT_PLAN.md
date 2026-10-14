@@ -134,6 +134,25 @@ A difference counts as resolved when the [min, max] ranges across runs don't
 overlap. Otherwise we report it as unresolved, like intra=2 vs spin-off on the
 Mac.
 
+## Mac v1 deviations
+
+v1 runs the 224 cells on the Mac (`matrices/mac-v1.json`, 22 cells: the matrix
+above at 224 only, minus the two redundant cpus=1/matched/spin=off cells). The
+plan's statistics would take 4 h 25 m there (from the pilot, `results/mac-v1/pilot.csv`),
+so two things changed, decided 2026-10-14 to fit ~3 h:
+
+- **4 repeats instead of 5.** The [min, max] across runs covers the median
+  run-level value with 87.5% probability instead of 93.8%.
+- **Per-run cap of 300 s of timed loop instead of 600 s** (same 1000-iteration target
+  and 300-iteration floor). It only affects the three slowest cells, all at
+  `--cpus=1` with ORT's default threads: fp32 spin on (357 iterations), int8 spin on
+  (525) and fp32 spin off (726). Those cells are 4–11x slower than matched threads,
+  so a coarser p99 there cannot change any conclusion, and the time it saves buys a
+  4th repeat for every cell.
+
+Estimated 2 h 46 m. Raw timings, `machine-main-local.json` and the run conditions
+are in `results/mac-v1/`.
+
 ## Runtime and cost
 
 Planning assumptions (anchored on Mac native measurements where possible):
