@@ -143,7 +143,13 @@ def image_info(image: str) -> dict | None:
         "'python_version': platform.python_version(), 'machine': platform.machine()}))"
     )
     inside = run("docker", "run", "--rm", "--entrypoint", "python", image, "-c", probe)
-    return {"image": image, "image_id": image_id, **(json.loads(inside) if inside else {"probe": "failed"})}
+    # The image ID can change on every rebuild (BuildKit attaches a provenance
+    # attestation with build metadata), so also fingerprint the content: the
+    # layer digests only change when the image's files do.
+    layers = run("docker", "image", "inspect", "--format", "{{json .RootFS.Layers}}", image)
+    content = hashlib.sha256(layers.encode()).hexdigest() if layers else None
+    return {"image": image, "image_id": image_id, "content_sha256": content,
+            **(json.loads(inside) if inside else {"probe": "failed"})}
 
 
 def git_state() -> dict | None:
