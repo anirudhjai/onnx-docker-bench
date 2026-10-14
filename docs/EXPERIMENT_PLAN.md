@@ -50,6 +50,14 @@ so both machines build from the same source.
 Fixed: ResNet-50, batch 1, `--opt-level all`, ORT 1.31.0, sequential execution
 mode, the pinned image.
 
+**onnxruntime is frozen at 1.31.0** (decided 2026-10-14). It was the current
+release when pinned (published 2026-10-09). The study compares configurations,
+not ORT versions, so every stage on every machine has to run the same build:
+an upgrade mid-study, even to a 1.31.x patch, would confound comparisons across
+stages and with the Mac results. It is pinned in `requirements.txt` and the
+Dockerfile's `ORT_VERSION`. `cloud/setup.sh` refuses to continue if the built
+image reports a different version, and every row and `machine-*.json` records it.
+
 | Factor | Levels |
 |---|---|
 | `--cpus` | 1, 2, 4 |
