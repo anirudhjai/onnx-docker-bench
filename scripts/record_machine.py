@@ -103,6 +103,26 @@ def cpufreq() -> dict | None:
     return {k: read(f"{base}/{k}") for k in ("scaling_governor", "scaling_driver", "cpuinfo_min_freq", "cpuinfo_max_freq")}
 
 
+def macos_host() -> dict | None:
+    """Apple Silicon host details (the Docker VM's vCPUs run on these cores)."""
+    if platform.system() != "Darwin":
+        return None
+    def sysctl(key: str) -> str | None:
+        return run("sysctl", "-n", key)
+    power = run("pmset", "-g", "batt")
+    return {
+        "hw_model": sysctl("hw.model"),
+        "cpu_brand": sysctl("machdep.cpu.brand_string"),
+        "performance_cores": sysctl("hw.perflevel0.physicalcpu"),
+        "efficiency_cores": sysctl("hw.perflevel1.physicalcpu"),
+        "memory_bytes": sysctl("hw.memsize"),
+        "macos_version": platform.mac_ver()[0],
+        "power_source": power.splitlines()[0].split("'")[1] if power and "'" in power else None,
+        "low_power_mode": next((line.split()[-1] for line in (run("pmset", "-g") or "").splitlines()
+                                if "lowpowermode" in line), None),
+    }
+
+
 def docker_info() -> dict | None:
     out = run("docker", "info", "--format", "{{json .}}")
     if out is None:
@@ -158,6 +178,7 @@ def main() -> None:
         "recorded_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "stage": args.stage,
         "ec2": ec2,
+        "macos_host": macos_host(),
         "os": {
             "pretty_name": next((line.split("=", 1)[1].strip('"') for line in (read("/etc/os-release") or "").splitlines()
                                  if line.startswith("PRETTY_NAME=")), platform.platform()),

@@ -1,0 +1,23 @@
+{
+  "name": "mac-v1",
+  "description": "Official Mac matrix (v1): 22 cells at 224x224, statistics from docs/EXPERIMENT_PLAN.md. Run with --estimates results/mac-v1/pilot.csv.",
+  "image": "onnx-docker-bench:latest",
+  "out": "results/mac-v1/results.csv",
+  "seed": 20261018,
+  "repeats": 5,
+  "warmup": 50,
+  "iters": 1000,
+  "iter_cap": {"max_timed_s": 600, "min_iters": 300},
+  "run_overhead_s": 5,
+  "models": {"fp32": "models/resnet50.onnx", "int8": "models/resnet50.int8.onnx"},
+  "factors": {
+    "model": ["fp32", "int8"],
+    "input": [224],
+    "cpus": [1, 2, 4],
+    "intra": [0, "matched"],
+    "spin": ["default", "off"]
+  },
+  "exclude": [
+    {"cpus": 1, "intra": "matched", "spin": "off"}
+  ]
+}
