@@ -1,8 +1,9 @@
 # Phase 2 experiment plan
 
-Status: draft for review, nothing here has been run. Prices were checked on
-2026-10-14 (instances.vantage.sh, us-east-1 on-demand Linux) and should be
-re-checked before launching.
+Status: ready for review; the tooling (runner, int8 model, per-run metrics) is
+built and was validated on the Mac, but nothing here has run in the cloud. Prices
+were checked on 2026-10-14 (instances.vantage.sh, us-east-1 on-demand Linux) and
+should be re-checked before launching.
 
 ## Questions
 
@@ -60,27 +61,29 @@ mode, the pinned image.
 matched setting is `intra=1`, which creates no worker threads, so `spin` cannot
 matter (the pilot runs one of these once to confirm). **44 cells per machine.**
 
-int8 model: `onnxruntime.quantization.quantize_dynamic(weight_type=QInt8)` on the
-fp32 export. It needs a new `scripts/quantize_model.py`, which must first strip
-the exporter's `value_info`; otherwise ORT's quantizer fails shape inference
-(`Inferred shape and existing shape differ in dimension 0: (2048) vs (1000)`).
-Mac probe (native macOS, scratch): int8 is 35.2 vs 99.1 ms at 1 thread and
-16.3 vs 32.4 ms at 4 threads; top-1 agrees with fp32, max relative logit error
-2.4%. The graph gains 50 `DynamicQuantizeLinear` nodes, so activation
-quantization is part of the timed latency. Static (calibrated QDQ) quantization
-would be faster but is a different experiment.
+int8 model: `scripts/quantize_model.py` writes `models/resnet50.int8.onnx` with
+`onnxruntime.quantization.quantize_dynamic(weight_type=QInt8)`. It strips the
+exporter's `value_info` first (the quantizer transposes the classifier weight but
+keeps its stale shape annotation, then fails its own shape inference) and checks
+fp32-vs-int8 argmax agreement on 32 fixed random inputs (32/32 on the Mac; the
+weights are random, so this is a sanity check, not accuracy). Mac native: int8
+is 35.2 vs 99.1 ms at 1 thread and 16.3 vs 32.4 ms at 4 threads. The graph gains
+50 `DynamicQuantizeLinear` nodes, so activation quantization is part of the timed
+latency. Static (calibrated QDQ) quantization would be faster but is a different
+experiment.
 
-**Is 44 too many?** No, I'd keep all of it: ~14 h per machine (both machines in
-parallel) for ~$10 total (see Runtime). If wall time matters more than coverage:
+**Is 44 too many?** No, I'd keep all of it, run in stages (below). If wall time
+matters more than coverage:
 
 | Option | Cells | h/machine (R=5) | Trade-off |
 |---|---:|---:|---|
-| A. Full (recommended) | 44 | ~13.9 | — |
-| B. Drop int8 @ 448 | 33 | ~10.3 | Lose "does the int8 speedup hold at larger inputs?" |
-| C. Drop 448 entirely | 22 | ~3.7 | Lose "is the oversubscription penalty fixed overhead or proportional to work?" |
+| A. Full (recommended) | 44 | ~17 | — |
+| B. Drop int8 @ 448 | 33 | ~13 | Lose "does the int8 speedup hold at larger inputs?" |
+| C. Drop 448 entirely | 22 | ~5 | Lose "is the oversubscription penalty fixed overhead or proportional to work?" |
 
-448 costs 10.1 of the ~14 hours, but it's also what distinguishes a per-operator
-synchronisation cost from one that scales with work, so I'd cut it last.
+448 costs ~12 of the ~17 hours, but it's also what distinguishes a per-operator
+synchronisation cost from one that scales with work, so I'd cut it last. The
+staged plan defers that decision until the 224 results are in.
 
 ## Repeats and iterations
 
@@ -106,10 +109,11 @@ At 300 iterations, "p99" is the 3rd–4th worst sample, which isn't meaningful.
 At 1000 it is bounded on both sides.
 
 **Cap for pathological cells:** if a 1000-iteration run would exceed ~10 min of
-timed loop (estimated from a pilot), use `max(300, floor(600 s / latency))`. That
-affects ~5 of 44 cells, all where ORT defaults meet 1–2 CPUs with spinning on.
-Effects there are 3–6x, so the coarser p99 doesn't change conclusions. `iters` is
-already recorded in every row.
+timed loop (estimated from the pilot), use `max(300, floor(600 s / latency))`.
+That affects ~6 of 44 cells, all where ORT defaults meet 1–2 CPUs. Effects there
+are 7–11x on the Mac, so the coarser p99 doesn't change conclusions. The runner
+applies the cap from pilot estimates only, so all repeats of a cell use the same
+count; `iters` is recorded in every row.
 
 **Repeats: R = 5 per cell, interleaved.** The [min, max] of R run-level values is
 a distribution-free CI for their median with coverage 1 - 2*0.5^R: 75% for R=3,
@@ -126,21 +130,51 @@ Planning assumptions (anchored on Mac native measurements where possible):
 
 - fp32 224 single-thread: 120 ms (M1 native: 99 ms). 448 = 4x. int8 = 0.4x fp32 (M1: 0.36x).
 - Matched-thread efficiency at 2/4 threads: fp32 0.85/0.75 (M1: 0.77 at 4), int8 0.75/0.55 (M1: 0.54 at 4).
-- ORT default (8 threads) vs matched, spin on: 6x / 3.3x / 1.8x at 1/2/4 CPUs.
-  Spin off: 1.3x / 1.1x / 1.05x. Only the 2-CPU figures were measured (Mac);
-  the others are guesses and dominate the uncertainty.
-- 15 s per run for container start, session creation and pilot.
+- ORT default (8 threads) vs matched, spin on: 11x / 7.2x / 3x at 1/2/4 CPUs.
+  The 1- and 2-CPU figures are from the Mac pilot with Rosetta off (fp32 224);
+  the 4-CPU figure is a guess. Spin off: 1.3x / 1.1x / 1.05x (measured only at
+  2 CPUs, and under TSO). These dominate the uncertainty.
+- 15 s per run for container start, session creation and model hashing.
 
 | Plan | h/machine | c8g.2xlarge | c8a.2xlarge |
 |---|---:|---:|---:|
-| 44 cells, R=5, capped iterations (recommended) | ~13.9 | ~$4.4 | ~$6.0 |
-| 44 cells, R=6, capped | ~16.6 | ~$5.3 | ~$7.2 |
-| 44 cells, R=5, uncapped 1000 iterations | ~18.1 | ~$5.8 | ~$7.8 |
+| 44 cells, R=5, capped iterations (recommended) | ~17 | ~$5.4 | ~$7.3 |
+| 44 cells, R=6, capped | ~20 | ~$6.5 | ~$8.8 |
+| 44 cells, R=5, uncapped 1000 iterations | ~28 | ~$8.8 | ~$11.9 |
 
-Run both machines in parallel: ~14 h wall clock, plus a ~1 h pilot each (1 run of
-every cell at 100 iterations) to measure real latencies and recompute iteration
-caps before the main run. EBS (30 GB gp3) and data transfer are cents. Even if the
-assumptions are 2x optimistic, the total stays under ~$25.
+By stage (R=5, capped): pilot ~1 h, input=224 ~5 h, input=448 ~12 h. The
+slowest single run is fp32/448/cpus=1/default threads/spin on: ~5.3 s per
+iteration at the 300-iteration floor, ~31 min per run. Both machines run in
+parallel. EBS (30 GB gp3) and data transfer are cents. Even if the assumptions are
+2x optimistic, the total stays under ~$35.
+
+## Staged execution
+
+Run each stage on both machines, and review before starting the next. The
+runner skips runs already in the output CSV, so a stage can be interrupted and
+resumed, and stages share one results file.
+
+```bash
+python3 scripts/run_matrix.py matrices/phase2-pilot.json --build                     # stage 0: pilot, ~1 h
+python3 scripts/run_matrix.py matrices/phase2.json --stage input=224 \
+    --estimates results/phase2/$(uname -m)/pilot.csv --dry-run                        # check order, caps, ETA
+python3 scripts/run_matrix.py matrices/phase2.json --stage input=224 \
+    --estimates results/phase2/$(uname -m)/pilot.csv                                  # stage 1: ~5 h
+# review stage 1, then:
+python3 scripts/run_matrix.py matrices/phase2.json --stage input=448 \
+    --estimates results/phase2/$(uname -m)/pilot.csv                                  # stage 2: ~12 h
+```
+
+1. **Pilot** (`matrices/phase2-pilot.json`): every cell once at 100 iterations,
+   including the cpus=1/matched/spin=off cell the main matrix drops. Check that
+   session_threads_added matches intra (default = 7 added on 8 vCPUs), cgroup_cpus
+   matches `--cpus`, nr_throttled is 0 without a quota, and the dropped cell
+   matches its spin=default twin. Its latencies set the iteration caps and ETAs.
+2. **All 224 cells** (110 runs). Cheaper, and enough to answer Q1–Q2 for both
+   models.
+3. **Review**: noise between repeats, loadavg, anything odd. Then decide whether
+   448 is worth ~12 h, or cut to option B.
+4. **448 cells** (110 runs).
 
 ## Controls
 
@@ -158,19 +192,16 @@ assumptions are 2x optimistic, the total stays under ~$25.
   AMI, region/AZ (IMDSv2), `lscpu`, CPU flags, kernel, Docker version, cgroup
   version, THP setting, NUMA layout, memory, image digest and ID, ORT build info,
   and the repo's git commit.
-- **Recorded per run** (already in the CSV): run_id, versions, os_cpu_count,
-  affinity, cgroup quota, baseline/process/session-added threads, iters, all
-  stats; raw per-iteration timings via `--save-raw`.
-
-Proposed additions (need approval before implementing):
-
-1. **cgroup `cpu.stat` deltas over the timed loop** (`usage_usec`, `nr_periods`,
-   `nr_throttled`, `throttled_usec`). This is the direct mechanism evidence: on
-   the Mac it showed whether a slowdown was throttling or slow execution.
-2. **`/proc/loadavg` at run start**, as a per-row noise covariate.
-3. **Model file sha256** per row, tying each row to the exact fp32/int8 file.
-4. **`scripts/run_matrix.py`**: builds the randomized schedule, runs the pilot,
-   launches containers, and is resumable (skips run_ids already present).
+- **Recorded per run** (in the CSV): run_id, label (`<cell_id>/r<repeat>`),
+  model sha256, versions, os_cpu_count, affinity, cgroup quota, 1-min load
+  average at start, baseline/process/session-added threads, iters, all stats,
+  and cgroup throttling deltas across the timed loop (`cgroup_nr_periods`,
+  `cgroup_nr_throttled`, `cgroup_throttled_usec`); raw per-iteration timings in
+  `raw/<run_id>.csv`. `throttled_usec` is summed over CPUs, so it can exceed
+  wall time; `nr_throttled / nr_periods` is the easier number to read.
+- Inside a container, the load average is the host's (or Docker VM's), which is
+  what we want as a noise covariate.
+- Not built yet: the once-per-machine `machine.json` recorder above.
 
 ## Analysis
 
@@ -193,54 +224,56 @@ Tables:
 - "What to set" table: best (intra, spin) per `--cpus` per arch and model, with
   the speedup over ORT defaults.
 - Environment table from `machine.json`.
-- (If cpu.stat is added) throttled-period fraction per cell.
+- Throttled-period fraction (`nr_throttled / nr_periods`) per cell.
 
 ## Findings so far (Mac, exploratory)
 
 M1 MacBook Pro, Docker Desktop 29.6.1 (8 vCPU, 3.8 GiB VM), ORT 1.31.0, ResNet-50
-fp32 224, batch 1. Data: `results/phase1.csv` plus scratch diagnostics.
+fp32 224, batch 1.
 
-**1. ORT's default thread pool ignores the container's CPU quota.** With
-`--cpus=2`, the container sees 8 CPUs (`os.cpu_count()` and affinity), so ORT
-starts 8 threads (7 workers + the caller) against 2 CPUs of quota:
+**1. ORT's default thread pool ignores the container's CPU quota.** Inside a
+container the process sees all 8 VM CPUs (`os.cpu_count()` and affinity), so ORT
+starts 8 threads (7 workers + the caller) whatever `--cpus` says.
 
-| config (`--cpus=2`) | p50 ms (runs) | p99 ms (runs) |
-|---|---|---|
-| ORT defaults (8 threads, spin on) | 1113, 1107 | 1422, 1293 |
-| `--intra-threads 2` | 339.1, 339.4, 339.2 | 344, 349, 350 |
-| 8 threads, `--spin off` | 372, 376, 323 | 394, 395, 390 |
+With Docker Desktop's Rosetta setting off (finding 2), from the runner validation
+runs (`matrices/mac-pilot.json`: 50 iterations per run, 4 runs per cell, scratch):
 
-Matching threads to the quota is 3.3x faster at p50 and 4.1x at p99; disabling
-spinning recovers about 3x. Run-to-run p50 spread is 0.1–0.5% for the stable
-configs, far below these effects. intra=2 vs spin-off is **not** resolved at p50:
-spin-off is bimodal and its p50 jumps between clusters (323–376 ms). It is
-resolved in the tail (p99 344–350 vs 390–395 ms) and in std (1–3 vs ~33 ms).
-Caveats: absolute numbers are inflated ~6.6x by finding 2; one machine; 2–3
-runs per config; the 1- and 4-CPU behaviour is untested.
+| `--cpus` | ORT default (8 threads), p50 ms | threads = cpus, p50 ms | penalty |
+|---|---|---|---:|
+| 1 | 1099–1206 | 100–102 | ~11x |
+| 2 | 317–406 | 53–54 | ~7x |
 
-**2. Docker Desktop's VM makes ORT ~6.6x slower on this Mac, independent of
-`--cpus`.** At 1 thread: 99.8 ms native vs 655 ms in a container with no CPU
-limit. What we established:
+Every default-thread run was throttled in 100% of its CFS periods (e.g. 554/554);
+matched runs were throttled in 22–76% of periods.
 
-- Same ORT commit on both sides, identical optimized graph, and ~all of the
-  extra time is in Conv/FusedConv. Not denormals; ORT 1.22.1/1.24.4/1.30.0
-  behave the same.
-- Not ORT-specific: OpenBLAS single-thread SGEMM (same library version and
-  kernel) is 95.7 vs 13.5 GFLOP/s (7.1x).
-- CPU feature flags match (dotprod, fp16 and fhm on both; no i8mm, bf16, SVE or SME).
-- Microbenchmarks: register-only NEON FMA, stores, and scalar integer code run
-  at full speed in the VM, but **loads from L1 are 11–18x slower** (NEON loads
-  131.5 vs 7.2 GB/s; scalar loads 64.7 vs ~5 GB/s). GEMM is load-throughput-bound.
-- A message-passing litmus test sees ~33% reordered observations natively and
-  **0 in ~860M samples inside the VM** (threads verified concurrent): the VM's
-  vCPUs enforce TSO-like ordering.
-- Docker Desktop (defaults) registers Rosetta in the VM, and mapping Rosetta
-  into an Apple Virtualization VM reportedly runs the whole VM in TSO mode.
+With Rosetta on (`results/phase1.csv`, `--cpus=2`, 300 iterations), the same
+comparison was 1113 vs 339 ms (3.3x). Spinning off brought the 8-thread case to
+372 ms there, but its latencies split into two clusters (p50 between 323 and 376
+ms across runs; p99 390–395 vs 344–350 ms matched). Rosetta's slow kernels hid
+part of the penalty. Spinning off has not been measured with Rosetta off.
 
-Hypothesis (not yet causally confirmed): VM-wide TSO, enabled for Rosetta, costs
-this M1 an order of magnitude in load throughput, and GEMM-heavy inference
-inherits it. The confirming test is to turn off Docker Desktop's "Use Rosetta
-for x86_64/amd64 emulation on Apple Silicon" and re-run the litmus and load
-microbenchmarks. Caveats: the magnitude may be M1-specific, and other
-hypervisors or newer chips may differ. Either way, Docker Desktop on a Mac is not
-a stand-in for native Linux, which is why Phase 2 runs on cloud VMs.
+Caveats: one machine; 50 iterations per run (p99 not meaningful); the Docker VM's
+vCPUs are scheduled by macOS across 4 performance and 4 efficiency cores.
+
+**2. Docker Desktop's Rosetta setting made ORT ~6.6x slower on this Mac.** With
+"Use Rosetta for x86_64/amd64 emulation on Apple Silicon" on (the default), the
+VM's vCPUs showed TSO-like memory ordering and loads ran 11–18x slower; turning
+it off restored both. Details, sources and how to reproduce:
+`investigations/rosetta-tso/README.md`.
+
+| Test | Rosetta on | Rosetta off | Host |
+|---|---:|---:|---:|
+| Message-passing litmus: reorderings | 0 of ~860M samples | ~50% | ~33% |
+| NEON loads from L1 (GB/s) | 7.2 | 131.6 | 130.1 |
+| OpenBLAS SGEMM, 1 thread (GFLOP/s) | 13.5 | 96.3 | 94.2 |
+| ORT, 1 thread, p50 (ms) | 655.0 | 99.8 | 100.0 |
+| ORT `--cpus=2 --intra-threads 2`, p50 (ms) | 339.1 | 53.5 | 55.9 (host, 2 threads) |
+
+Strictly, toggling the setting flipped the ordering behaviour and the slowdown
+together; TSO was not toggled on its own. The size is far above published costs
+of Apple's TSO mode (typically within 3%; 9–22% suite averages in earlier work),
+so either VM-wide TSO behaves differently on the M1 or the setting changes more
+than the memory model. Practical consequence: benchmark arm64 containers on Apple
+Silicon with Rosetta off. Even then, Docker Desktop on a Mac is not a stand-in for
+native Linux (a VM, with macOS scheduling its vCPUs), which is why Phase 2 runs on
+cloud VMs.
