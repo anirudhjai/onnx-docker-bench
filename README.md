@@ -42,7 +42,11 @@ scripts/run_one.sh
 ```
 
 Both append one row to the CSV. See `python bench/run.py --help` for all options
-(threads, optimization level, input size, batch, warmup/iterations).
+(intra-op threads, thread spinning, optimization level, input size, batch,
+warmup/iterations). ORT runs in its default sequential execution mode.
+
+`results/` holds real experiment output and is tracked; put smoke tests and
+throwaway runs in `results/scratch/` (gitignored).
 
 ## Results
 
