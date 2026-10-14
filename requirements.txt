@@ -1,0 +1,11 @@
+# Runtime dependencies for bench/run.py.
+# Keep onnxruntime/numpy in sync with the ARG defaults in Dockerfile.
+onnxruntime==1.31.0
+# numpy 2.5 requires Python >= 3.12; 2.4.x is the newest line that also runs on
+# the python:3.11 image, so host and container use the same numpy.
+numpy==2.4.6
+
+# transitive (pip freeze)
+flatbuffers==25.12.19
+packaging==26.3
+protobuf==7.36.2
