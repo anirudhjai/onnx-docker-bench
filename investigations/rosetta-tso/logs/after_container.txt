@@ -1,0 +1,20 @@
+=== mb
+fma_reg     0.128 s   100.3 GFLOP/s
+load_l1     0.050 s   131.6 GB/s
+store_l1    0.132 s    49.5 GB/s
+copy_l1     0.085 s    77.4 GB/s
+int_reg     1.893 s    0.53 Gops/s
+(sink 2.69484e+08)
+=== litmus2 x5
+scalar_load_l1  0.099 s    66.0 GB/s  (sum 838451200000)
+MP litmus: 2098899466 samples, 56349025 flag changes seen (concurrency), 1050671402 reorderings (data < flag)
+scalar_load_l1  0.099 s    66.1 GB/s  (sum 838451200000)
+MP litmus: 2221604081 samples, 58851479 flag changes seen (concurrency), 1104012438 reorderings (data < flag)
+scalar_load_l1  0.099 s    66.3 GB/s  (sum 838451200000)
+MP litmus: 2028616343 samples, 55446035 flag changes seen (concurrency), 1030549319 reorderings (data < flag)
+scalar_load_l1  0.099 s    66.3 GB/s  (sum 838451200000)
+MP litmus: 2103171972 samples, 54912958 flag changes seen (concurrency), 1024738206 reorderings (data < flag)
+scalar_load_l1  0.099 s    66.3 GB/s  (sum 838451200000)
+MP litmus: 2029791174 samples, 54588027 flag changes seen (concurrency), 1012319685 reorderings (data < flag)
+=== OpenBLAS matmul
+container (Rosetta off) / OpenBLAS auto    median   22.30 ms     96.3 GFLOP/s  blas=[('openblas', 'neoversen1', 1)]

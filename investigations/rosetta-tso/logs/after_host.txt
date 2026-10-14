@@ -1,0 +1,15 @@
+=== host mb
+fma_reg     0.145 s    88.2 GFLOP/s
+load_l1     0.050 s   130.1 GB/s
+store_l1    0.133 s    49.4 GB/s
+copy_l1     0.074 s    89.0 GB/s
+int_reg     1.897 s    0.53 Gops/s
+(sink 2.69484e+08)
+=== host litmus2
+scalar_load_l1  0.099 s    66.5 GB/s  (sum 838451200000)
+MP litmus: 314927812 samples, 12521551 flag changes seen (concurrency), 104305854 reorderings (data < flag)
+=== host OpenBLAS
+host / OpenBLAS auto                       median   22.80 ms     94.2 GFLOP/s  blas=[('openblas', 'neoversen1', 1)]
+=== host ORT
+  latency ms: p50 100.028  p95 101.009  p99 101.096  mean 100.075  std 0.426  min 99.453  max 101.111
+  latency ms: p50 55.928  p95 56.581  p99 57.187  mean 55.984  std 0.359  min 55.377  max 58.094
