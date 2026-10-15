@@ -1,6 +1,6 @@
 # Run conditions captured immediately before starting matrices/mac-v1.json
 date_utc: 2026-10-14T22:52:34Z
-git: a363c34 (0 uncommitted tracked changes)
+git: c78fd59 (0 uncommitted tracked changes)
 wrapper: caffeinate -dimsu (no display/idle/disk/system sleep while the runner runs)
 
 ## power (running on battery by decision; Low Power Mode off)
