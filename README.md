@@ -8,6 +8,16 @@ ResNet-50 inference 3.5–7.9× slower (fp32, median p50) than setting
 Measured on an M1 MacBook Pro under Docker Desktop (Linux VM with 8 vCPUs), ONNX
 Runtime 1.31.0, 22 configurations × 4 runs; see [Limitations](#limitations).
 
+Runtimes sizing thread pools from the CPUs they can see rather than the container's
+CPU quota is a known class of problem: the JVM has derived its processor count from
+the cgroup quota since JDK 10 ([JDK-8146115](https://bugs.openjdk.org/browse/JDK-8146115)),
+and Go 1.25 made `GOMAXPROCS` follow the container's CPU limit
+([Go blog](https://go.dev/blog/container-aware-gomaxprocs)). For ONNX Runtime it was
+reported in [onnxruntime#29510](https://github.com/microsoft/onnxruntime/issues/29510),
+which led to an `ORT_INTRA_OP_NUM_THREADS` environment variable
+([#29688](https://github.com/microsoft/onnxruntime/pull/29688)); this repo measures what
+the default costs, shows why, and checks the fixes.
+
 ![ORT's default thread count is 3.5–7.9× slower than matching threads to the container's CPU limit](docs/figures/fig1_default_vs_matched.png)
 
 ## What to do about it
@@ -37,7 +47,20 @@ session = ort.InferenceSession("model.onnx", opts, providers=["CPUExecutionProvi
 ```
 
 Only whole-CPU limits (1, 2, 4) were tested; rounding up for fractional limits is an
-untested choice.
+untested choice here (it is what Go 1.25 does).
+
+**Or set it from the environment, with no code change.** Since
+[#29688](https://github.com/microsoft/onnxruntime/pull/29688), ORT sizes its default pool
+from `ORT_INTRA_OP_NUM_THREADS` when `intra_op_num_threads` isn't set in code:
+
+```bash
+docker run --cpus=2 -e ORT_INTRA_OP_NUM_THREADS=2 your-image
+```
+
+Checked with ORT 1.31.0 at `--cpus=2` (fp32, one 300-iteration run each): the session
+started 2 threads instead of 8, and p50 was 53.4 ms, the same as setting
+`intra_op_num_threads=2` in code (53.5 ms), against 305 ms with the default
+([results/mac-exploratory/ort-env-var-check.csv](results/mac-exploratory/ort-env-var-check.csv)).
 
 **If you can't control the thread count, turn off spinning.** It recovers most of
 the loss, but not all of it:
