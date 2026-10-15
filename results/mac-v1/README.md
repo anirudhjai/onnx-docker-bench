@@ -37,8 +37,8 @@ Summary table, checks and figures: `docs/results_summary.md`, `docs/figures/`
   battery run is slower in 3 and faster in 1. No consistent power effect is visible
   (`docs/results_summary.md`, Checks).
 - **Sleep prevented:** the runner was wrapped in `caffeinate -dimsu`.
-- **Idle-ish, not idle.** At start the Mac was ~85% idle; the window server (~25% of
-  one core), a desktop chat app (~25%) and Docker Desktop (~7%) were the main
+- **Idle-ish, not idle.** At start the Mac was ~85% idle; the macOS window server (~25%
+  of one core), other desktop apps (~25%) and Docker Desktop (~7%) were the main
   users. Heavy apps were closed and the Mac was not used heavily during the run.
   `run-start.txt` keeps only the idle percentage and load average. macOS load averages count differently from Linux and are not
   comparable with the per-row `loadavg_1m`, which is the Docker VM's.
