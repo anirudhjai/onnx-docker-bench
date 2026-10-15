@@ -50,7 +50,7 @@
     "machine": "aarch64"
   },
   "git": {
-    "commit": "a363c3456a7727024841600abfeb32962fb1af73",
+    "commit": "c78fd59ac9dac0a21abe49cb1689f5f92a02f2f8",
     "dirty": false
   },
   "models_sha256": {

@@ -49,7 +49,7 @@
     "machine": "aarch64"
   },
   "git": {
-    "commit": "49a07e8e5d20f88ea34ad2f8c544319c4ef4975e",
+    "commit": "54e46332e0377899214997d3fea50cc8b5ac7466",
     "dirty": false
   },
   "models_sha256": {
