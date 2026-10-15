@@ -260,6 +260,13 @@ Tables:
 
 ## Findings so far (Mac, exploratory)
 
+> **Superseded by the v1 results** (`README.md`, `results/mac-v1/`,
+> `docs/results_summary.md`): ORT's default threads were 7.9x, 5.4x and 3.5x slower
+> than matched threads at 1, 2 and 4 CPUs (fp32, median of 4 runs). The ~11x / ~7x
+> below came from 50-iteration runner-validation runs earlier the same day
+> (`results/mac-exploratory/`), under different background conditions. The runtime
+> model above still uses them, so its cloud estimates are on the high side.
+
 M1 MacBook Pro, Docker Desktop 29.6.1 (8 vCPU, 3.8 GiB VM), ORT 1.31.0, ResNet-50
 fp32 224, batch 1.
 
