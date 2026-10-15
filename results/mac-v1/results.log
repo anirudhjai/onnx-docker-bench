@@ -1,0 +1,179 @@
+2026-10-14T22:52:49Z matrix mac-v1 (matrices/mac-v1.json), stage: all cells, seed 20261018; 88 runs, 0 already in results/mac-v1/results.csv, 88 to do
+2026-10-14T22:52:49Z image onnx-docker-bench:latest = sha256:d957aa466870d8ed8a6bdce918b8645c346a74b624acb21e0109873c76e18d3f
+2026-10-14T22:52:49Z [1/88] start fp32-224-cpus2-intramatched-spindefault/r1 iters=1000 est=1m01s, remaining ~2h46m, power battery 90%
+2026-10-14T22:53:46Z done fp32-224-cpus2-intramatched-spindefault/r1 in 58s: p50 53.5049 p99 63.8941 ms, session threads +1, throttled 143/543 periods, run 20261014T225249Z-4a3c0d
+2026-10-14T22:53:46Z [2/88] start int8-224-cpus2-intramatched-spinoff/r1 iters=1000 est=0m29s, remaining ~2h45m, power battery 90%
+2026-10-14T22:54:11Z done int8-224-cpus2-intramatched-spinoff/r1 in 25s: p50 22.7463 p99 28.3496 ms, session threads +1, throttled 0/231 periods, run 20261014T225347Z-d49adb
+2026-10-14T22:54:11Z [3/88] start fp32-224-cpus4-intra0-spinoff/r1 iters=1000 est=0m56s, remaining ~2h45m, power battery 90%
+2026-10-14T22:55:01Z done fp32-224-cpus4-intra0-spinoff/r1 in 50s: p50 41.0328 p99 62.3955 ms, session threads +7, throttled 465/470 periods, run 20261014T225411Z-909c49
+2026-10-14T22:55:01Z [4/88] start int8-224-cpus4-intramatched-spindefault/r1 iters=1000 est=0m19s, remaining ~2h44m, power battery 89%
+2026-10-14T22:55:16Z done int8-224-cpus4-intramatched-spindefault/r1 in 15s: p50 13.1470 p99 16.2775 ms, session threads +3, throttled 53/133 periods, run 20261014T225501Z-84fa15
+2026-10-14T22:55:16Z [5/88] start int8-224-cpus2-intra0-spinoff/r1 iters=1000 est=0m41s, remaining ~2h43m, power battery 89%
+2026-10-14T22:55:53Z done int8-224-cpus2-intra0-spinoff/r1 in 37s: p50 23.3545 p99 63.6164 ms, session threads +7, throttled 346/346 periods, run 20261014T225516Z-993f3d
+2026-10-14T22:55:53Z [6/88] start int8-224-cpus4-intramatched-spinoff/r1 iters=1000 est=0m25s, remaining ~2h43m, power battery 89%
+2026-10-14T22:56:13Z done int8-224-cpus4-intramatched-spinoff/r1 in 20s: p50 18.7430 p99 22.3493 ms, session threads +3, throttled 0/189 periods, run 20261014T225553Z-8ba05b
+2026-10-14T22:56:13Z [7/88] start fp32-224-cpus1-intra0-spinoff/r1 iters=726 (capped) est=5m25s, remaining ~2h42m, power battery 88%
+2026-10-14T23:01:23Z done fp32-224-cpus1-intra0-spinoff/r1 in 310s: p50 404.1100 p99 497.4748 ms, session threads +7, throttled 2884/2884 periods, run 20261014T225613Z-7a9f32
+2026-10-14T23:01:23Z [8/88] start int8-224-cpus1-intramatched-spindefault/r1 iters=1000 est=0m41s, remaining ~2h36m, power battery 88%
+2026-10-14T23:02:00Z done int8-224-cpus1-intramatched-spindefault/r1 in 37s: p50 34.1622 p99 44.7129 ms, session threads +0, throttled 66/347 periods, run 20261014T230124Z-537223
+2026-10-14T23:02:00Z [9/88] start int8-224-cpus4-intra0-spinoff/r1 iters=1000 est=0m28s, remaining ~2h35m, power battery 87%
+2026-10-14T23:02:24Z done int8-224-cpus4-intra0-spinoff/r1 in 24s: p50 21.6818 p99 31.0022 ms, session threads +7, throttled 0/219 periods, run 20261014T230201Z-cf1301
+2026-10-14T23:02:24Z [10/88] start int8-224-cpus1-intra0-spinoff/r1 iters=1000 est=2m16s, remaining ~2h35m, power battery 87%
+2026-10-14T23:04:23Z done int8-224-cpus1-intra0-spinoff/r1 in 119s: p50 102.2267 p99 190.5441 ms, session threads +7, throttled 1132/1132 periods, run 20261014T230224Z-f79dcd
+2026-10-14T23:04:23Z [11/88] start int8-224-cpus1-intra0-spindefault/r1 iters=525 (capped) est=5m33s, remaining ~2h32m, power battery 87%
+2026-10-14T23:09:20Z done int8-224-cpus1-intra0-spindefault/r1 in 297s: p50 500.3163 p99 900.6050 ms, session threads +7, throttled 2691/2691 periods, run 20261014T230423Z-3452ed
+2026-10-14T23:09:20Z [12/88] start fp32-224-cpus2-intra0-spinoff/r1 iters=1000 est=2m01s, remaining ~2h25m, power battery 86%
+2026-10-14T23:11:18Z done fp32-224-cpus2-intra0-spinoff/r1 in 118s: p50 105.1856 p99 169.8752 ms, session threads +7, throttled 1114/1114 periods, run 20261014T230920Z-44f824
+2026-10-14T23:11:18Z [13/88] start fp32-224-cpus4-intramatched-spindefault/r1 iters=1000 est=0m37s, remaining ~2h23m, power battery 86%
+2026-10-14T23:11:51Z done fp32-224-cpus4-intramatched-spindefault/r1 in 33s: p50 29.6659 p99 48.3424 ms, session threads +3, throttled 143/309 periods, run 20261014T231118Z-d78e78
+2026-10-14T23:11:51Z [14/88] start fp32-224-cpus1-intra0-spindefault/r1 iters=357 (capped) est=5m46s, remaining ~2h22m, power battery 85%
+2026-10-14T23:17:37Z done fp32-224-cpus1-intra0-spindefault/r1 in 346s: p50 805.7172 p99 1206.2396 ms, session threads +7, throttled 3020/3020 periods, run 20261014T231152Z-2da0b8
+2026-10-14T23:17:37Z [15/88] start int8-224-cpus4-intra0-spindefault/r1 iters=1000 est=1m08s, remaining ~2h17m, power battery 85%
+2026-10-14T23:18:38Z done int8-224-cpus4-intra0-spindefault/r1 in 61s: p50 73.9448 p99 114.8414 ms, session threads +7, throttled 575/575 periods, run 20261014T231738Z-dcd953
+2026-10-14T23:18:38Z [16/88] start fp32-224-cpus4-intra0-spindefault/r1 iters=1000 est=2m30s, remaining ~2h16m, power battery 84%
+2026-10-14T23:20:49Z done fp32-224-cpus4-intra0-spindefault/r1 in 131s: p50 107.0475 p99 267.8998 ms, session threads +7, throttled 1250/1250 periods, run 20261014T231838Z-5b6314
+2026-10-14T23:20:49Z [17/88] start fp32-224-cpus2-intra0-spindefault/r1 iters=1000 est=4m52s, remaining ~2h12m, power AC 83%
+2026-10-14T23:26:29Z done fp32-224-cpus2-intra0-spindefault/r1 in 340s: p50 299.3255 p99 607.0333 ms, session threads +7, throttled 3195/3195 periods, run 20261014T232050Z-c6fb05
+2026-10-14T23:26:29Z [18/88] start int8-224-cpus2-intramatched-spindefault/r1 iters=1000 est=0m27s, remaining ~2h10m, power AC 83%
+2026-10-14T23:26:51Z done int8-224-cpus2-intramatched-spindefault/r1 in 22s: p50 19.9230 p99 23.1077 ms, session threads +1, throttled 71/201 periods, run 20261014T232630Z-b3621f
+2026-10-14T23:26:51Z [19/88] start int8-224-cpus2-intra0-spindefault/r1 iters=1000 est=2m28s, remaining ~2h09m, power AC 83%
+2026-10-14T23:29:26Z done int8-224-cpus2-intra0-spindefault/r1 in 155s: p50 113.9651 p99 285.8684 ms, session threads +7, throttled 1465/1465 periods, run 20261014T232651Z-27e1c1
+2026-10-14T23:29:26Z [20/88] start fp32-224-cpus1-intramatched-spindefault/r1 iters=1000 est=1m51s, remaining ~2h07m, power AC 85%
+2026-10-14T23:31:14Z done fp32-224-cpus1-intramatched-spindefault/r1 in 108s: p50 101.4428 p99 123.2550 ms, session threads +0, throttled 485/1024 periods, run 20261014T232926Z-f9de44
+2026-10-14T23:31:14Z [21/88] start fp32-224-cpus4-intramatched-spinoff/r1 iters=1000 est=0m40s, remaining ~2h06m, power AC 86%
+2026-10-14T23:31:50Z done fp32-224-cpus4-intramatched-spinoff/r1 in 36s: p50 33.4767 p99 37.8218 ms, session threads +3, throttled 0/337 periods, run 20261014T233114Z-390ae1
+2026-10-14T23:31:50Z [22/88] start fp32-224-cpus2-intramatched-spinoff/r1 iters=1000 est=1m04s, remaining ~2h05m, power AC 87%
+2026-10-14T23:32:48Z done fp32-224-cpus2-intramatched-spinoff/r1 in 58s: p50 54.8596 p99 56.9469 ms, session threads +1, throttled 19/549 periods, run 20261014T233150Z-f68e74
+2026-10-14T23:32:48Z [23/88] start int8-224-cpus4-intramatched-spindefault/r2 iters=1000 est=0m19s, remaining ~2h04m, power AC 87%
+2026-10-14T23:33:03Z done int8-224-cpus4-intramatched-spindefault/r2 in 15s: p50 13.4578 p99 17.4068 ms, session threads +3, throttled 72/136 periods, run 20261014T233249Z-5b2bb1
+2026-10-14T23:33:03Z [24/88] start int8-224-cpus4-intra0-spindefault/r2 iters=1000 est=1m05s, remaining ~2h04m, power AC 87%
+2026-10-14T23:33:57Z done int8-224-cpus4-intra0-spindefault/r2 in 54s: p50 69.0597 p99 87.0430 ms, session threads +7, throttled 507/507 periods, run 20261014T233304Z-7cbdfe
+2026-10-14T23:33:57Z [25/88] start int8-224-cpus1-intra0-spindefault/r2 iters=525 (capped) est=5m00s, remaining ~2h02m, power AC 88%
+2026-10-14T23:38:01Z done int8-224-cpus1-intra0-spindefault/r2 in 244s: p50 403.5409 p99 690.9092 ms, session threads +7, throttled 2223/2223 periods, run 20261014T233358Z-34fe58
+2026-10-14T23:38:01Z [26/88] start fp32-224-cpus2-intramatched-spindefault/r2 iters=1000 est=1m02s, remaining ~1h57m, power AC 90%
+2026-10-14T23:38:58Z done fp32-224-cpus2-intramatched-spindefault/r2 in 58s: p50 53.5131 p99 61.7279 ms, session threads +1, throttled 197/541 periods, run 20261014T233801Z-30effb
+2026-10-14T23:38:58Z [27/88] start fp32-224-cpus4-intramatched-spindefault/r2 iters=1000 est=0m37s, remaining ~1h55m, power AC 90%
+2026-10-14T23:39:32Z done fp32-224-cpus4-intramatched-spindefault/r2 in 33s: p50 30.4101 p99 39.7290 ms, session threads +3, throttled 182/310 periods, run 20261014T233859Z-742571
+2026-10-14T23:39:32Z [28/88] start fp32-224-cpus4-intra0-spindefault/r2 iters=1000 est=2m16s, remaining ~1h55m, power AC 90%
+2026-10-14T23:41:24Z done fp32-224-cpus4-intra0-spindefault/r2 in 112s: p50 102.2466 p99 163.8309 ms, session threads +7, throttled 1060/1060 periods, run 20261014T233932Z-559f46
+2026-10-14T23:41:24Z [29/88] start fp32-224-cpus2-intra0-spinoff/r2 iters=1000 est=2m02s, remaining ~1h52m, power AC 91%
+2026-10-14T23:43:24Z done fp32-224-cpus2-intra0-spinoff/r2 in 121s: p50 106.5610 p99 171.6452 ms, session threads +7, throttled 1145/1145 periods, run 20261014T234124Z-52263f
+2026-10-14T23:43:24Z [30/88] start int8-224-cpus2-intra0-spindefault/r2 iters=1000 est=2m39s, remaining ~1h50m, power AC 92%
+2026-10-14T23:45:46Z done int8-224-cpus2-intra0-spindefault/r2 in 142s: p50 111.1603 p99 201.8837 ms, session threads +7, throttled 1345/1345 periods, run 20261014T234325Z-5bd997
+2026-10-14T23:45:46Z [31/88] start fp32-224-cpus4-intramatched-spinoff/r2 iters=1000 est=0m40s, remaining ~1h47m, power AC 93%
+2026-10-14T23:46:22Z done fp32-224-cpus4-intramatched-spinoff/r2 in 36s: p50 33.2632 p99 37.8213 ms, session threads +3, throttled 0/334 periods, run 20261014T234546Z-b349a6
+2026-10-14T23:46:22Z [32/88] start int8-224-cpus4-intramatched-spinoff/r2 iters=1000 est=0m25s, remaining ~1h47m, power AC 93%
+2026-10-14T23:46:42Z done int8-224-cpus4-intramatched-spinoff/r2 in 20s: p50 18.7334 p99 20.8925 ms, session threads +3, throttled 0/188 periods, run 20261014T234622Z-77c1eb
+2026-10-14T23:46:42Z [33/88] start int8-224-cpus1-intra0-spinoff/r2 iters=1000 est=2m04s, remaining ~1h46m, power AC 93%
+2026-10-14T23:49:07Z done int8-224-cpus1-intra0-spinoff/r2 in 145s: p50 114.9337 p99 195.8681 ms, session threads +7, throttled 1387/1387 periods, run 20261014T234642Z-cbc8a9
+2026-10-14T23:49:07Z [34/88] start fp32-224-cpus4-intra0-spinoff/r2 iters=1000 est=0m54s, remaining ~1h45m, power AC 94%
+2026-10-14T23:49:59Z done fp32-224-cpus4-intra0-spinoff/r2 in 52s: p50 41.2982 p99 66.7921 ms, session threads +7, throttled 489/489 periods, run 20261014T234908Z-2e7445
+2026-10-14T23:49:59Z [35/88] start fp32-224-cpus1-intra0-spinoff/r2 iters=726 (capped) est=5m13s, remaining ~1h44m, power AC 94%
+2026-10-14T23:55:37Z done fp32-224-cpus1-intra0-spinoff/r2 in 337s: p50 411.2841 p99 504.8253 ms, session threads +7, throttled 3151/3151 periods, run 20261014T235000Z-01bf64
+2026-10-14T23:55:37Z [36/88] start int8-224-cpus1-intramatched-spindefault/r2 iters=1000 est=0m41s, remaining ~1h39m, power AC 96%
+2026-10-14T23:56:13Z done int8-224-cpus1-intramatched-spindefault/r2 in 36s: p50 33.5766 p99 34.9623 ms, session threads +0, throttled 7/337 periods, run 20261014T235537Z-7b931b
+2026-10-14T23:56:13Z [37/88] start fp32-224-cpus1-intra0-spindefault/r2 iters=357 (capped) est=5m49s, remaining ~1h38m, power AC 96%
+2026-10-15T00:01:22Z done fp32-224-cpus1-intra0-spindefault/r2 in 310s: p50 713.2432 p99 1141.4689 ms, session threads +7, throttled 2703/2703 periods, run 20261014T235613Z-74a460
+2026-10-15T00:01:22Z [38/88] start int8-224-cpus2-intra0-spinoff/r2 iters=1000 est=0m41s, remaining ~1h32m, power AC 97%
+2026-10-15T00:01:59Z done int8-224-cpus2-intra0-spinoff/r2 in 37s: p50 23.1317 p99 67.3608 ms, session threads +7, throttled 348/348 periods, run 20261015T000123Z-709cf9
+2026-10-15T00:01:59Z [39/88] start fp32-224-cpus2-intra0-spindefault/r2 iters=1000 est=5m40s, remaining ~1h31m, power AC 98%
+2026-10-15T00:06:50Z done fp32-224-cpus2-intra0-spindefault/r2 in 291s: p50 289.4882 p99 482.3685 ms, session threads +7, throttled 2765/2765 periods, run 20261015T000200Z-e58312
+2026-10-15T00:06:50Z [40/88] start fp32-224-cpus1-intramatched-spindefault/r2 iters=1000 est=1m52s, remaining ~1h25m, power AC 98%
+2026-10-15T00:08:37Z done fp32-224-cpus1-intramatched-spindefault/r2 in 107s: p50 101.0846 p99 103.4808 ms, session threads +0, throttled 24/1009 periods, run 20261015T000651Z-f4760b
+2026-10-15T00:08:37Z [41/88] start int8-224-cpus2-intramatched-spindefault/r2 iters=1000 est=0m26s, remaining ~1h23m, power AC 100%
+2026-10-15T00:08:58Z done int8-224-cpus2-intramatched-spindefault/r2 in 22s: p50 19.8450 p99 21.7082 ms, session threads +1, throttled 71/199 periods, run 20261015T000837Z-468444
+2026-10-15T00:08:58Z [42/88] start int8-224-cpus2-intramatched-spinoff/r2 iters=1000 est=0m29s, remaining ~1h23m, power AC 100%
+2026-10-15T00:09:23Z done int8-224-cpus2-intramatched-spinoff/r2 in 25s: p50 22.7762 p99 23.5476 ms, session threads +1, throttled 0/229 periods, run 20261015T000859Z-e61477
+2026-10-15T00:09:23Z [43/88] start fp32-224-cpus2-intramatched-spinoff/r2 iters=1000 est=1m03s, remaining ~1h22m, power AC 100%
+2026-10-15T00:10:21Z done fp32-224-cpus2-intramatched-spinoff/r2 in 59s: p50 55.0844 p99 56.7785 ms, session threads +1, throttled 0/551 periods, run 20261015T000923Z-d6c15e
+2026-10-15T00:10:21Z [44/88] start int8-224-cpus4-intra0-spinoff/r2 iters=1000 est=0m28s, remaining ~1h21m, power AC 100%
+2026-10-15T00:10:45Z done int8-224-cpus4-intra0-spinoff/r2 in 23s: p50 21.7631 p99 23.3353 ms, session threads +7, throttled 0/217 periods, run 20261015T001022Z-80ba76
+2026-10-15T00:10:45Z [45/88] start int8-224-cpus1-intra0-spindefault/r3 iters=525 (capped) est=4m34s, remaining ~1h21m, power AC 100%
+2026-10-15T00:15:03Z done int8-224-cpus1-intra0-spindefault/r3 in 258s: p50 406.7236 p99 702.0061 ms, session threads +7, throttled 2354/2354 periods, run 20261015T001045Z-d982d2
+2026-10-15T00:15:03Z [46/88] start fp32-224-cpus2-intra0-spinoff/r3 iters=1000 est=2m04s, remaining ~1h16m, power AC 100%
+2026-10-15T00:17:03Z done fp32-224-cpus2-intra0-spinoff/r3 in 120s: p50 106.0500 p99 174.1388 ms, session threads +7, throttled 1136/1136 periods, run 20261015T001503Z-f52401
+2026-10-15T00:17:03Z [47/88] start int8-224-cpus4-intra0-spinoff/r3 iters=1000 est=0m28s, remaining ~1h14m, power AC 100%
+2026-10-15T00:17:26Z done int8-224-cpus4-intra0-spinoff/r3 in 23s: p50 21.6630 p99 22.9241 ms, session threads +7, throttled 0/216 periods, run 20261015T001703Z-b209c2
+2026-10-15T00:17:26Z [48/88] start int8-224-cpus1-intra0-spinoff/r3 iters=1000 est=2m17s, remaining ~1h13m, power AC 100%
+2026-10-15T00:19:45Z done int8-224-cpus1-intra0-spinoff/r3 in 138s: p50 113.7744 p99 191.9521 ms, session threads +7, throttled 1330/1330 periods, run 20261015T001727Z-17493c
+2026-10-15T00:19:45Z [49/88] start fp32-224-cpus4-intramatched-spindefault/r3 iters=1000 est=0m37s, remaining ~1h11m, power AC 100%
+2026-10-15T00:20:17Z done fp32-224-cpus4-intramatched-spindefault/r3 in 32s: p50 29.6353 p99 37.9791 ms, session threads +3, throttled 128/302 periods, run 20261015T001945Z-003981
+2026-10-15T00:20:17Z [50/88] start fp32-224-cpus2-intramatched-spindefault/r3 iters=1000 est=1m02s, remaining ~1h10m, power AC 100%
+2026-10-15T00:21:14Z done fp32-224-cpus2-intramatched-spindefault/r3 in 57s: p50 53.2568 p99 55.4024 ms, session threads +1, throttled 125/534 periods, run 20261015T002017Z-e88d33
+2026-10-15T00:21:14Z [51/88] start int8-224-cpus4-intramatched-spindefault/r3 iters=1000 est=0m19s, remaining ~1h09m, power AC 100%
+2026-10-15T00:21:29Z done int8-224-cpus4-intramatched-spindefault/r3 in 15s: p50 13.3000 p99 20.6590 ms, session threads +3, throttled 86/137 periods, run 20261015T002114Z-368882
+2026-10-15T00:21:29Z [52/88] start fp32-224-cpus4-intramatched-spinoff/r3 iters=1000 est=0m40s, remaining ~1h09m, power AC 100%
+2026-10-15T00:22:05Z done fp32-224-cpus4-intramatched-spinoff/r3 in 36s: p50 33.7104 p99 38.0489 ms, session threads +3, throttled 0/339 periods, run 20261015T002129Z-f78f9c
+2026-10-15T00:22:05Z [53/88] start int8-224-cpus4-intramatched-spinoff/r3 iters=1000 est=0m25s, remaining ~1h08m, power AC 100%
+2026-10-15T00:22:26Z done int8-224-cpus4-intramatched-spinoff/r3 in 21s: p50 18.9163 p99 21.1707 ms, session threads +3, throttled 0/190 periods, run 20261015T002205Z-563557
+2026-10-15T00:22:26Z [54/88] start fp32-224-cpus1-intra0-spindefault/r3 iters=357 (capped) est=5m31s, remaining ~1h08m, power AC 100%
+2026-10-15T00:27:47Z done fp32-224-cpus1-intra0-spindefault/r3 in 321s: p50 794.5143 p99 1101.7000 ms, session threads +7, throttled 2812/2812 periods, run 20261015T002226Z-3562a5
+2026-10-15T00:27:47Z [55/88] start fp32-224-cpus2-intra0-spindefault/r3 iters=1000 est=5m18s, remaining ~1h02m, power AC 100%
+2026-10-15T00:32:19Z done fp32-224-cpus2-intra0-spindefault/r3 in 272s: p50 285.0245 p99 367.6535 ms, session threads +7, throttled 2579/2579 periods, run 20261015T002747Z-396b6a
+2026-10-15T00:32:19Z [56/88] start int8-224-cpus1-intramatched-spindefault/r3 iters=1000 est=0m41s, remaining ~57m15s, power AC 100%
+2026-10-15T00:32:56Z done int8-224-cpus1-intramatched-spindefault/r3 in 37s: p50 33.9976 p99 44.1576 ms, session threads +0, throttled 159/346 periods, run 20261015T003219Z-032f90
+2026-10-15T00:32:56Z [57/88] start fp32-224-cpus2-intramatched-spinoff/r3 iters=1000 est=1m03s, remaining ~56m34s, power AC 100%
+2026-10-15T00:33:54Z done fp32-224-cpus2-intramatched-spinoff/r3 in 58s: p50 54.7895 p99 60.0782 ms, session threads +1, throttled 39/550 periods, run 20261015T003256Z-1ebd81
+2026-10-15T00:33:54Z [58/88] start fp32-224-cpus4-intra0-spinoff/r3 iters=1000 est=0m55s, remaining ~55m31s, power AC 100%
+2026-10-15T00:34:46Z done fp32-224-cpus4-intra0-spinoff/r3 in 52s: p50 41.0284 p99 66.3021 ms, session threads +7, throttled 488/488 periods, run 20261015T003355Z-e028ff
+2026-10-15T00:34:46Z [59/88] start int8-224-cpus2-intramatched-spinoff/r3 iters=1000 est=0m29s, remaining ~54m37s, power AC 100%
+2026-10-15T00:35:11Z done int8-224-cpus2-intramatched-spinoff/r3 in 25s: p50 22.8413 p99 23.7885 ms, session threads +1, throttled 0/228 periods, run 20261015T003446Z-7599ac
+2026-10-15T00:35:11Z [60/88] start int8-224-cpus2-intra0-spinoff/r3 iters=1000 est=0m41s, remaining ~54m08s, power AC 100%
+2026-10-15T00:35:48Z done int8-224-cpus2-intra0-spinoff/r3 in 37s: p50 23.3328 p99 67.4181 ms, session threads +7, throttled 350/350 periods, run 20261015T003511Z-6432e5
+2026-10-15T00:35:48Z [61/88] start fp32-224-cpus4-intra0-spindefault/r3 iters=1000 est=2m06s, remaining ~53m26s, power AC 100%
+2026-10-15T00:37:41Z done fp32-224-cpus4-intra0-spindefault/r3 in 113s: p50 102.5156 p99 166.2640 ms, session threads +7, throttled 1065/1065 periods, run 20261015T003548Z-fe3cb7
+2026-10-15T00:37:41Z [62/88] start int8-224-cpus2-intramatched-spindefault/r3 iters=1000 est=0m26s, remaining ~51m11s, power AC 100%
+2026-10-15T00:38:02Z done int8-224-cpus2-intramatched-spindefault/r3 in 22s: p50 20.1531 p99 21.4786 ms, session threads +1, throttled 48/202 periods, run 20261015T003741Z-075af8
+2026-10-15T00:38:03Z [63/88] start int8-224-cpus2-intra0-spindefault/r3 iters=1000 est=2m32s, remaining ~50m45s, power AC 100%
+2026-10-15T00:40:25Z done int8-224-cpus2-intra0-spindefault/r3 in 142s: p50 110.0236 p99 198.3522 ms, session threads +7, throttled 1348/1348 periods, run 20261015T003803Z-f88f6f
+2026-10-15T00:40:25Z [64/88] start fp32-224-cpus1-intramatched-spindefault/r3 iters=1000 est=1m52s, remaining ~48m06s, power AC 100%
+2026-10-15T00:42:12Z done fp32-224-cpus1-intramatched-spindefault/r3 in 108s: p50 101.2011 p99 111.7448 ms, session threads +0, throttled 451/1020 periods, run 20261015T004025Z-a0fed9
+2026-10-15T00:42:12Z [65/88] start fp32-224-cpus1-intra0-spinoff/r3 iters=726 (capped) est=5m28s, remaining ~46m15s, power AC 100%
+2026-10-15T00:47:41Z done fp32-224-cpus1-intra0-spinoff/r3 in 329s: p50 406.6180 p99 497.5184 ms, session threads +7, throttled 3071/3071 periods, run 20261015T004213Z-c1c62c
+2026-10-15T00:47:41Z [66/88] start int8-224-cpus4-intra0-spindefault/r3 iters=1000 est=1m02s, remaining ~40m53s, power AC 100%
+2026-10-15T00:48:34Z done int8-224-cpus4-intra0-spindefault/r3 in 53s: p50 39.4416 p99 89.6119 ms, session threads +7, throttled 499/499 periods, run 20261015T004742Z-cc7e27
+2026-10-15T00:48:34Z [67/88] start fp32-224-cpus4-intra0-spinoff/r4 iters=1000 est=0m56s, remaining ~39m48s, power AC 100%
+2026-10-15T00:49:26Z done fp32-224-cpus4-intra0-spinoff/r4 in 52s: p50 41.1052 p99 66.2495 ms, session threads +7, throttled 487/487 periods, run 20261015T004835Z-4f43ac
+2026-10-15T00:49:26Z [68/88] start int8-224-cpus4-intra0-spinoff/r4 iters=1000 est=0m28s, remaining ~38m52s, power AC 100%
+2026-10-15T00:49:50Z done int8-224-cpus4-intra0-spinoff/r4 in 24s: p50 22.0060 p99 23.5867 ms, session threads +7, throttled 0/220 periods, run 20261015T004926Z-6782c8
+2026-10-15T00:49:50Z [69/88] start int8-224-cpus1-intramatched-spindefault/r4 iters=1000 est=0m41s, remaining ~38m24s, power AC 100%
+2026-10-15T00:50:26Z done int8-224-cpus1-intramatched-spindefault/r4 in 37s: p50 34.0577 p99 41.1988 ms, session threads +0, throttled 69/343 periods, run 20261015T004950Z-a3b8bd
+2026-10-15T00:50:26Z [70/88] start int8-224-cpus2-intramatched-spinoff/r4 iters=1000 est=0m29s, remaining ~37m42s, power AC 100%
+2026-10-15T00:50:51Z done int8-224-cpus2-intramatched-spinoff/r4 in 25s: p50 22.7623 p99 23.6122 ms, session threads +1, throttled 0/228 periods, run 20261015T005027Z-d42ac6
+2026-10-15T00:50:51Z [71/88] start fp32-224-cpus2-intramatched-spindefault/r4 iters=1000 est=1m02s, remaining ~37m13s, power AC 100%
+2026-10-15T00:51:48Z done fp32-224-cpus2-intramatched-spindefault/r4 in 57s: p50 53.3707 p99 62.3725 ms, session threads +1, throttled 263/540 periods, run 20261015T005051Z-be9aae
+2026-10-15T00:51:48Z [72/88] start fp32-224-cpus2-intra0-spinoff/r4 iters=1000 est=2m04s, remaining ~36m12s, power AC 100%
+2026-10-15T00:53:48Z done fp32-224-cpus2-intra0-spinoff/r4 in 120s: p50 106.2984 p99 174.1282 ms, session threads +7, throttled 1140/1140 periods, run 20261015T005149Z-1d3e05
+2026-10-15T00:53:48Z [73/88] start fp32-224-cpus4-intramatched-spinoff/r4 iters=1000 est=0m40s, remaining ~34m07s, power AC 100%
+2026-10-15T00:54:24Z done fp32-224-cpus4-intramatched-spinoff/r4 in 36s: p50 33.4525 p99 37.7238 ms, session threads +3, throttled 0/336 periods, run 20261015T005349Z-b7de08
+2026-10-15T00:54:24Z [74/88] start fp32-224-cpus1-intramatched-spindefault/r4 iters=1000 est=1m52s, remaining ~33m27s, power AC 100%
+2026-10-15T00:56:13Z done fp32-224-cpus1-intramatched-spindefault/r4 in 108s: p50 101.6066 p99 110.3426 ms, session threads +0, throttled 608/1023 periods, run 20261015T005425Z-ca150d
+2026-10-15T00:56:13Z [75/88] start int8-224-cpus4-intramatched-spindefault/r4 iters=1000 est=0m19s, remaining ~31m35s, power AC 100%
+2026-10-15T00:56:27Z done int8-224-cpus4-intramatched-spindefault/r4 in 15s: p50 13.1049 p99 16.6448 ms, session threads +3, throttled 62/133 periods, run 20261015T005613Z-80fa61
+2026-10-15T00:56:27Z [76/88] start int8-224-cpus2-intra0-spindefault/r4 iters=1000 est=2m27s, remaining ~31m16s, power AC 100%
+2026-10-15T00:58:46Z done int8-224-cpus2-intra0-spindefault/r4 in 139s: p50 108.8950 p99 199.0376 ms, session threads +7, throttled 1319/1319 periods, run 20261015T005628Z-43d659
+2026-10-15T00:58:46Z [77/88] start int8-224-cpus4-intramatched-spinoff/r4 iters=1000 est=0m25s, remaining ~28m49s, power AC 100%
+2026-10-15T00:59:07Z done int8-224-cpus4-intramatched-spinoff/r4 in 20s: p50 18.8065 p99 20.8527 ms, session threads +3, throttled 0/189 periods, run 20261015T005847Z-29ecb6
+2026-10-15T00:59:07Z [78/88] start int8-224-cpus4-intra0-spindefault/r4 iters=1000 est=0m58s, remaining ~28m24s, power AC 100%
+2026-10-15T01:00:01Z done int8-224-cpus4-intra0-spindefault/r4 in 54s: p50 66.5597 p99 88.0141 ms, session threads +7, throttled 508/508 periods, run 20261015T005907Z-3ce81d
+2026-10-15T01:00:01Z [79/88] start fp32-224-cpus2-intra0-spindefault/r4 iters=1000 est=4m55s, remaining ~27m26s, power AC 100%
+2026-10-15T01:04:37Z done fp32-224-cpus2-intra0-spindefault/r4 in 276s: p50 284.7663 p99 391.3808 ms, session threads +7, throttled 2618/2618 periods, run 20261015T010001Z-f1b4ab
+2026-10-15T01:04:37Z [80/88] start fp32-224-cpus4-intra0-spindefault/r4 iters=1000 est=1m57s, remaining ~22m31s, power AC 100%
+2026-10-15T01:06:30Z done fp32-224-cpus4-intra0-spindefault/r4 in 113s: p50 102.5670 p99 172.7253 ms, session threads +7, throttled 1068/1068 periods, run 20261015T010437Z-895a0d
+2026-10-15T01:06:30Z [81/88] start int8-224-cpus2-intra0-spinoff/r4 iters=1000 est=0m42s, remaining ~20m34s, power AC 100%
+2026-10-15T01:07:07Z done int8-224-cpus2-intra0-spinoff/r4 in 38s: p50 23.3996 p99 66.8154 ms, session threads +7, throttled 350/354 periods, run 20261015T010630Z-5500d3
+2026-10-15T01:07:07Z [82/88] start int8-224-cpus2-intramatched-spindefault/r4 iters=1000 est=0m26s, remaining ~19m52s, power AC 100%
+2026-10-15T01:07:29Z done int8-224-cpus2-intramatched-spindefault/r4 in 22s: p50 20.1843 p99 23.9269 ms, session threads +1, throttled 83/204 periods, run 20261015T010708Z-fed6ab
+2026-10-15T01:07:29Z [83/88] start int8-224-cpus1-intra0-spindefault/r4 iters=525 (capped) est=4m23s, remaining ~19m26s, power AC 100%
+2026-10-15T01:11:58Z done int8-224-cpus1-intra0-spindefault/r4 in 268s: p50 492.3799 p99 701.8241 ms, session threads +7, throttled 2438/2438 periods, run 20261015T010730Z-af3574
+2026-10-15T01:11:58Z [84/88] start fp32-224-cpus1-intra0-spindefault/r4 iters=357 (capped) est=5m25s, remaining ~15m04s, power AC 100%
+2026-10-15T01:17:22Z done fp32-224-cpus1-intra0-spindefault/r4 in 324s: p50 797.6666 p99 1046.9625 ms, session threads +7, throttled 2810/2810 periods, run 20261015T011158Z-99f730
+2026-10-15T01:17:22Z [85/88] start fp32-224-cpus1-intra0-spinoff/r4 iters=726 (capped) est=5m33s, remaining ~9m38s, power AC 100%
+2026-10-15T01:23:00Z done fp32-224-cpus1-intra0-spinoff/r4 in 338s: p50 410.7269 p99 499.3756 ms, session threads +7, throttled 3157/3157 periods, run 20261015T011722Z-21e383
+2026-10-15T01:23:00Z [86/88] start fp32-224-cpus2-intramatched-spinoff/r4 iters=1000 est=1m03s, remaining ~4m05s, power AC 100%
+2026-10-15T01:23:58Z done fp32-224-cpus2-intramatched-spinoff/r4 in 59s: p50 54.8245 p99 60.1925 ms, session threads +1, throttled 62/551 periods, run 20261015T012300Z-1f5077
+2026-10-15T01:23:58Z [87/88] start int8-224-cpus1-intra0-spinoff/r4 iters=1000 est=2m25s, remaining ~3m02s, power AC 100%
+2026-10-15T01:26:25Z done int8-224-cpus1-intra0-spinoff/r4 in 147s: p50 115.7076 p99 195.1797 ms, session threads +7, throttled 1404/1404 periods, run 20261015T012358Z-818fa2
+2026-10-15T01:26:25Z [88/88] start fp32-224-cpus4-intramatched-spindefault/r4 iters=1000 est=0m37s, remaining ~0m37s, power AC 100%
+2026-10-15T01:26:58Z done fp32-224-cpus4-intramatched-spindefault/r4 in 33s: p50 29.7361 p99 39.2224 ms, session threads +3, throttled 171/305 periods, run 20261015T012625Z-b2d84b
+2026-10-15T01:26:58Z stage complete: all 88 runs of 'all cells' are in results/mac-v1/results.csv

@@ -1,0 +1,28 @@
+# Run conditions captured immediately before starting matrices/mac-v1.json
+date_utc: 2026-10-14T22:52:34Z
+git: a363c34 (0 uncommitted tracked changes)
+wrapper: caffeinate -dimsu (no display/idle/disk/system sleep while the runner runs)
+
+## power (running on battery by decision; Low Power Mode off)
+Now drawing from 'Battery Power'
+ -InternalBattery-0 (id=24445027)	90%; discharging; 7:15 remaining present: true
+ lowpowermode         0
+
+## Docker Desktop VM
+ Server Version: 29.6.1
+ Cgroup Driver: cgroupfs
+ Cgroup Version: 2
+ Kernel Version: 6.12.76-linuxkit
+ Operating System: Docker Desktop
+ CPUs: 8
+ Total Memory: 3.826GiB
+
+## Rosetta (binfmt handlers registered in the Docker VM; checked from a privileged container)
+handlers: arm i386 mips64 mips64le ppc64le register riscv64 s390x status x86_64 
+rosetta entries: 0
+x86_64 interpreter /usr/bin/qemu-x86_64
+
+## host idle state (macOS top, second of two 5 s samples)
+CPU idle: 85.23%
+Load Avg: 2.46, 3.42, 3.76 
+(per-process list removed for privacy)
