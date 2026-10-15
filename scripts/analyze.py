@@ -20,6 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS_CSV = ROOT / "results" / "mac-v1" / "results.csv"  # raw timings: raw/ next to it
@@ -95,6 +96,23 @@ def key(model, cpus, intra, spin):
     return f"{model}-224-cpus{cpus}-intra{intra}-spin{spin}"
 
 
+def runs_text(cells) -> str:
+    n = sorted({c["runs"] for c in cells.values()})
+    return f"{n[0]} runs" if len(n) == 1 else f"{n[0]}–{n[-1]} runs"
+
+
+def pct_range(values) -> str:
+    lo, hi = round(min(values)), round(max(values))
+    return f"{lo}%" if lo == hi else f"{lo}–{hi}%"
+
+
+def plain_log(axis):
+    """Log axis labelled 20, 50, 100, 200, ... instead of powers of ten."""
+    axis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+    axis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    axis.set_minor_formatter(NullFormatter())
+
+
 def bar_label(ax, x, y, text, color=INK, dy=1.08, **kw):
     ax.text(x, y * dy, text, ha="center", va="bottom", fontsize=9, color=color, **kw)
 
@@ -124,6 +142,7 @@ def fig1_headline(cells):
         ratios.append(ratio)
         bar_label(ax, x[i] - w / 2, med(d["p99"]), f"{ratio:.1f}× slower", dy=1.15, fontweight="bold")
     ax.set_yscale("log")
+    plain_log(ax.yaxis)
     ax.set_xticks(x, [f"--cpus={c}" for c in cpus])
     ax.set_ylabel("latency per image (ms, log scale)")
     ax.set_ylim(top=ax.get_ylim()[1] * 2.2)
@@ -133,7 +152,7 @@ def fig1_headline(cells):
                plt.Line2D([], [], marker="D", linestyle="", color=SURFACE, markeredgecolor=INK, markersize=6)]
     ax.legend(handles, ["ORT default threads (8 = visible CPUs), p50",
                         "intra_op_num_threads = --cpus, p50", "p99"], loc="upper right", fontsize=9)
-    fig.text(0.01, -0.02, "ResNet-50 fp32, 224×224, batch 1, spinning at ORT default. Bars: median p50 of 5 runs; "
+    fig.text(0.01, -0.02, f"ResNet-50 fp32, 224×224, batch 1, spinning at ORT default. Bars: median p50 of {runs_text(cells)}; "
              "lines: min–max across runs.\nDocker Desktop 29.6.1 on an M1 MacBook Pro (VM: 8 vCPUs), Rosetta off. "
              "Data: results/mac-v1/results.csv", fontsize=8, color=INK_2, va="top")
     save(fig, "fig1_default_vs_matched.png")
@@ -154,18 +173,23 @@ def fig2_throttling(cells):
                     ax.text(x[i] + dx, 0.02, "n/a", ha="center", fontsize=8, color=INK_2)
                     continue
                 share = 100 * med(cell["throttled"])
-                ax.bar(x[i] + dx, share, width=w - 0.02, color=color, zorder=2, label=label if i == 0 else None)
+                ax.bar(x[i] + dx, share, width=w - 0.02, color=color, zorder=2)
                 ax.vlines(x[i] + dx, 100 * min(cell["throttled"]), 100 * max(cell["throttled"]), color=INK, linewidth=1, zorder=3)
                 bar_label(ax, x[i] + dx, max(share, 1), f"{share:.0f}%", dy=1.0)
         ax.set_xticks(x, [f"--cpus={c}" for c in cpus])
         ax.set_title(title, fontsize=10, fontweight="normal")
         ax.set_ylim(0, 112)
     axes[0].set_ylabel("CFS periods throttled (%)")
-    axes[1].legend(loc="upper right", fontsize=9)
-    fig.suptitle("Default threads exhaust the CPU quota in almost every 100 ms period", x=0.01, ha="left",
-                 fontsize=12, fontweight="bold")
+    fig.legend([plt.Rectangle((0, 0), 1, 1, color=DEFAULT), plt.Rectangle((0, 0), 1, 1, color=MATCHED)],
+               ["ORT default threads (8)", "intra_op_num_threads = --cpus"], loc="upper right",
+               bbox_to_anchor=(0.99, 0.94), ncol=2, fontsize=9)
+    shares = {intra: [100 * med(c["throttled"]) for c in cells.values()
+                      if c["model"] == "fp32" and (c["intra"] == "0") == (intra == "0")] for intra in ("0", "matched")}
+    fig.suptitle(f"ORT's default threads were throttled in {pct_range(shares['0'])} of CPU-quota periods,\n"
+                 f"threads matched to --cpus in {pct_range(shares['matched'])}",
+                 x=0.01, ha="left", fontsize=12, fontweight="bold")
     fig.text(0.01, -0.03, "fp32, 224×224. nr_throttled / nr_periods from the container's cgroup cpu.stat over the "
-             "timed loop; median of 5 runs, lines: min–max. Data: results/mac-v1/results.csv",
+             f"timed loop; median of {runs_text(cells)}, lines: min–max. Data: results/mac-v1/results.csv",
              fontsize=8, color=INK_2, va="top")
     fig.tight_layout()
     save(fig, "fig2_throttling.png")
@@ -176,23 +200,37 @@ def fig3_distributions(cells):
                (key("fp32", 2, "0", "off"), SPIN_OFF, "ORT default threads, spinning off"),
                (key("fp32", 2, "0", "default"), DEFAULT, "ORT default threads (spinning on)")]
     allv = np.concatenate([cells[k]["pooled"] for k, _, _ in configs])
-    bins = np.geomspace(allv.min() * 0.95, allv.max() * 1.05, 90)
+    # A handful of extreme iterations would stretch the axis; cap it and say so.
+    x_max = min(allv.max() * 1.05, 1000.0)
+    beyond = allv[allv > x_max]
+    bins = np.geomspace(allv.min() * 0.95, x_max, 90)
     fig, axes = plt.subplots(3, 1, figsize=(7.5, 5.6), sharex=True)
-    for ax, (k, color, label) in zip(axes, configs):
+    for i, (ax, (k, color, label)) in enumerate(zip(axes, configs)):
         v = cells[k]["pooled"]
         ax.hist(v, bins=bins, color=color, zorder=2)
         ax.set_xscale("log")
-        ax.text(0.99, 0.85, f"{label}\np50 {np.median(v):.0f} ms, p99 {np.percentile(v, 99):.0f} ms, n = {v.size}",
-                transform=ax.transAxes, ha="right", va="top", fontsize=9, color=INK)
-        ax.set_ylabel("runs (count)")
+        # Label on the side of the panel away from its data.
+        x_text, ha = (0.99, "right") if i < 2 else (0.01, "left")
+        ax.text(x_text, 0.85, f"{label}\np50 {np.median(v):.0f} ms, p99 {np.percentile(v, 99):.0f} ms, n = {v.size}",
+                transform=ax.transAxes, ha=ha, va="top", fontsize=9, color=INK)
+        ax.set_ylabel("iterations")
     axes[-1].set_xlabel("latency per image (ms, log scale)")
+    axes[-1].set_xlim(right=x_max)
+    plain_log(axes[-1].xaxis)
     off = cells[key("fp32", 2, "0", "off")]["pooled"]
     gap_lo, gap_hi = largest_gap(off)
     axes[1].axvspan(gap_lo, gap_hi, color=GRID, zorder=1)
-    fig.suptitle("At --cpus=2, turning spinning off splits latency into two clusters", x=0.01, ha="left",
-                 fontsize=12, fontweight="bold")
-    fig.text(0.01, -0.01, f"fp32, 224×224, all timed iterations of 5 runs pooled. Shaded: the empty gap in the "
-             f"spin-off distribution ({gap_lo:.0f}–{gap_hi:.0f} ms). Data: results/mac-v1/raw/",
+    low, high = off[off <= gap_lo], off[off >= gap_hi]
+    bimodal = gap_hi / gap_lo >= 1.15 and min(low.size, high.size) >= 0.05 * off.size
+    title = (f"At --cpus=2, turning spinning off splits latency into two clusters:\n"
+             f"{low.size / off.size:.0%} of iterations near {np.median(low):.0f} ms, "
+             f"{high.size / off.size:.0%} near {np.median(high):.0f} ms" if bimodal else
+             "Latency distributions at --cpus=2")
+    fig.suptitle(title, x=0.01, ha="left", fontsize=12, fontweight="bold")
+    fig.text(0.01, -0.01, f"fp32, 224×224, all timed iterations of {runs_text(cells)} pooled. Shaded: the widest empty gap in the "
+             f"spin-off distribution ({gap_lo:.0f}–{gap_hi:.0f} ms).\n"
+             + (f" Not shown: {beyond.size} iterations above {x_max:.0f} ms (max {beyond.max():.0f} ms)." if beyond.size else "")
+             + " Data: results/mac-v1/raw/",
              fontsize=8, color=INK_2, va="top")
     fig.tight_layout()
     save(fig, "fig3_distributions_cpus2.png")
@@ -222,11 +260,11 @@ def fig4_int8(cells):
         bar_label(ax, x[i] + w / 2, med(q["p50"]), f"{s:.1f}× faster", dy=1.04)
     ax.set_xticks(x, [f"--cpus={c}" for c in cpus])
     ax.set_ylabel("p50 latency per image (ms)")
-    ax.set_title(f"int8 dynamic quantization is {min(speedups):.1f}–{max(speedups):.1f}× faster than fp32 "
-                 "at matched threads")
+    ax.set_title(f"int8 dynamic quantization is {min(speedups):.1f}–{max(speedups):.1f}× faster than fp32\n"
+                 "with threads matched to --cpus")
     ax.legend([plt.Rectangle((0, 0), 1, 1, color=MATCHED), plt.Rectangle((0, 0), 1, 1, color=INT8)],
               ["fp32", "int8 (dynamic, QInt8 weights)"], loc="upper right", fontsize=9)
-    fig.text(0.01, -0.02, "224×224, intra_op_num_threads = --cpus, spinning at ORT default. Median p50 of 5 runs; "
+    fig.text(0.01, -0.02, f"224×224, intra_op_num_threads = --cpus, spinning at ORT default. Median p50 of {runs_text(cells)}; "
              "lines: min–max.\nRandom weights: this is a latency comparison, not an accuracy one. "
              "Data: results/mac-v1/results.csv", fontsize=8, color=INK_2, va="top")
     save(fig, "fig4_fp32_vs_int8.png")
@@ -247,7 +285,7 @@ def fig5_rosetta():
         ax.text(1.42, host, f"macOS host\n{host:g}", va="center", fontsize=8, color=INK_2)
         for xi, v in ((0, on), (1, off)):
             ax.text(xi, v * 1.02, f"{v:g}", ha="center", va="bottom", fontsize=9)
-        ax.set_xticks([0, 1], ["Rosetta setting on\n(Docker Desktop default)", "Rosetta setting off"])
+        ax.set_xticks([0, 1], ["Rosetta on\n(Docker default)", "Rosetta off"])
         ax.set_xlim(-0.5, 1.9)
         ax.set_ylabel(ylabel)
         ax.set_ylim(0, max(on, off, host) * 1.18)
@@ -285,6 +323,55 @@ def summary_table(cells) -> str:
     return "\n".join(lines)
 
 
+def checks(rows: list[dict], cells: dict) -> str:
+    """Data-quality checks, as markdown: power source, unexpected thread counts, and the
+    run-to-run spread of the most oversubscribed fp32 cell."""
+    out = ["## Checks", ""]
+
+    # Power: AC vs battery runs of the same cell, compared with that cell's repeat spread.
+    sources = sorted({r.get("power_source", "n/a") for r in rows})
+    pcts = [int(r["battery_pct"]) for r in rows if r.get("battery_pct", "").isdigit()]
+    out.append(f"- **Power source at run start:** {', '.join(sources)} across all {len(rows)} runs"
+               + (f"; battery {min(pcts)}–{max(pcts)}%." if pcts else "."))
+    mixed = []
+    for cell, c in cells.items():
+        runs = [r for r in rows if r["cell"] == cell]
+        by_src = defaultdict(list)
+        for r in runs:
+            by_src[r.get("power_source", "n/a")].append(float(r["p50_ms"]))
+        if len(by_src) > 1:
+            spread = max(c["p50"]) - min(c["p50"])
+            mixed.append(f"  - {cell}: " + ", ".join(f"{s} p50 {[round(v, 1) for v in vs]}" for s, vs in by_src.items())
+                         + f" (all-run spread {spread:.1f} ms)")
+    if mixed:
+        out.append("- **Cells with both AC and battery runs** (compare the gap with the spread):")
+        out += mixed
+    else:
+        out.append("- No cell has runs on more than one power source, so AC vs battery can't be compared "
+                   "within a cell in this data.")
+
+    # Threads: ORT's pool adds intra-1 workers; the default is one per visible CPU.
+    odd = []
+    for r in rows:
+        expected = (int(r["cgroup_cpus"].split(".")[0]) if r["intra"] == "matched" else int(r["os_cpu_count"])) - 1
+        if r["session_threads_added"] != str(expected):
+            odd.append(f"{r['label']} added {r['session_threads_added']} (expected {expected}), run {r['run_id']}")
+    out.append(f"- **Session threads added:** {'all as expected' if not odd else str(len(odd)) + ' unexpected:'}")
+    out += [f"  - {o}" for o in odd]
+
+    # The most oversubscribed fp32 cell, run by run.
+    worst = [r for r in rows if r["cell"] == key("fp32", 1, "0", "default")]
+    out.append(f"- **{key('fp32', 1, '0', 'default')}, run by run** (p50 / p99 ms, load average and battery at start):")
+    for r in sorted(worst, key=lambda r: r["label"]):
+        out.append(f"  - {r['label'].split('/')[1]}: {float(r['p50_ms']):.0f} / {float(r['p99_ms']):.0f}, "
+                   f"load {r['loadavg_1m']}, {r.get('power_source', 'n/a')} {r.get('battery_pct', 'n/a')}%, "
+                   f"{r['iters']} iterations")
+    p50 = [float(r["p50_ms"]) for r in worst]
+    if p50:
+        out.append(f"  - range {min(p50):.0f}–{max(p50):.0f} ms ({max(p50) / min(p50):.2f}× max/min)")
+    return "\n".join(out)
+
+
 def main() -> None:
     global RESULTS_CSV, FIGURES, SUMMARY
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -294,24 +381,29 @@ def main() -> None:
     args = parser.parse_args()
     RESULTS_CSV, FIGURES, SUMMARY = args.csv.resolve(), args.figures.resolve(), args.summary.resolve()
 
-    cells = summarize(load_runs())
+    rows = load_runs()
+    cells = summarize(rows)
     ratios = fig1_headline(cells)
     fig2_throttling(cells)
     fig3_distributions(cells)
     speedups = fig4_int8(cells)
     fig5_rosetta()
     table = summary_table(cells)
+    notes = checks(rows, cells)
     SUMMARY.write_text(
         "# Mac v1 results summary\n\n"
         "Generated by `scripts/analyze.py` from `results/mac-v1/results.csv` and `results/mac-v1/raw/`. "
         "Spread is across repeats (one container launch each); pooled p99 uses every timed iteration of "
         "every repeat. \"Periods throttled\" is `cgroup_nr_throttled / cgroup_nr_periods` over the timed "
-        "loop. \"Threads added\" is the OS threads ORT's session added (pool size − 1).\n\n" + table + "\n"
+        "loop. \"CPU ms per inference\" is `cgroup_usage_usec / iters`: the container's CPU time per image, "
+        "all threads. \"Threads added\" is the OS threads ORT's session added (pool size − 1).\n\n"
+        + table + "\n\n" + notes + "\n"
     )
     print(f"wrote {SUMMARY.relative_to(ROOT)}")
     print(f"default/matched p50 ratios (cpus 1,2,4): {', '.join(f'{r:.2f}' for r in ratios)}")
     print(f"int8 speedups at matched threads (cpus 1,2,4): {', '.join(f'{s:.2f}' for s in speedups)}")
     print(table)
+    print(notes)
 
 
 if __name__ == "__main__":
